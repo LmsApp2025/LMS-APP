@@ -49,8 +49,8 @@ COPY --from=admin-builder /app/packages/admin/.next ./packages/admin/.next
 COPY --from=admin-builder /app/packages/admin/public ./packages/admin/public
 
 # Copy the built server code and assets from the server-builder stage
-COPY --from=server-builder /app/build ./build
-COPY --from=server-builder /app/mails ./mails
+COPY --from=server-builder /app/packages/server/build ./build
+COPY --from=server-builder /app/packages/server/mails ./mails
 
 EXPOSE 8000
 
