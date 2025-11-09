@@ -31,9 +31,8 @@ const AppStateProvider: FC<{ children: React.ReactNode }> = ({ children }) => {
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
-        <SessionProvider>
+        
             <AppStateProvider>{children}</AppStateProvider>
-        </SessionProvider>
     </Provider>
   );
 }
