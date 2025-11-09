@@ -1,0 +1,34 @@
+# General
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+**/node_modules
+**/package-lock.json
+
+# Server Specific
+server/build
+server/.env
+server/minio_data
+
+# Admin (Next.js) Specific
+admin/.next
+admin/out
+
+# Client (Expo) Specific
+new-client/.expo
+new-client/dist
+new-client/web-build
+new-client/android
+new-client/ios
+new-client/.env*.local
+
+# IDE & OS specific
+.vscode
+*.pem
+
+# Ignore IDE-specific settings
+.vscode/
