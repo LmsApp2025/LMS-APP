@@ -1,1 +1,1 @@
-export const SERVER_URI = "https://lms-project-production.up.railway.app/api/v1";
+export const SERVER_URI = "https://lms-app-production-e065.up.railway.app/api/v1";
