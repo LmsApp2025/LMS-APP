@@ -12,7 +12,12 @@ RUN npm install --workspace=admin
 
 # Copy the admin source code and build it
 COPY packages/admin ./packages/admin/
+
+# Provide a placeholder for the build-time environment variable
+ENV NEXT_PUBLIC_SOCKET_SERVER_URI=""
+
 RUN npm run build --workspace=admin
+
 
 
 # ---- Stage 2: Build the Server (TypeScript) ----
