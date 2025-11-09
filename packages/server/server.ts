@@ -16,7 +16,7 @@ const port = parseInt(process.env.PORT || '8000', 10);
 // This logic now correctly finds the 'admin' directory whether
 // it's running from the source '.ts' file in development,
 // or from the compiled '.js' file in the 'build' directory in production.
-const adminAppPath = path.resolve(__dirname, dev ? '../../admin' : '../../../packages/admin');
+const adminAppPath = dev ? path.join(__dirname, '../../admin') : path.resolve(process.cwd(), 'packages/admin');
 
 const nextApp = next({ dev, dir: adminAppPath });
 const handle = nextApp.getRequestHandler();
