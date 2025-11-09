@@ -47,6 +47,7 @@ RUN npm install --omit=dev
 # Copy the built admin panel from the admin-builder stage
 COPY --from=admin-builder /app/packages/admin/.next ./packages/admin/.next
 COPY --from=admin-builder /app/packages/admin/public ./packages/admin/public
+COPY --from=admin-builder /app/packages/admin/next.config.js ./packages/admin/next.config.js 
 
 # Copy the built server code and assets from the server-builder stage
 COPY --from=server-builder /app/packages/server/build ./build
