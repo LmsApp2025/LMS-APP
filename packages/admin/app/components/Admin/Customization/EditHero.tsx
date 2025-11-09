@@ -29,9 +29,13 @@ const EditHero: FC<Props> = (props: Props) => {
       refetch();
     }
     if (error) {
-      if ("data" in error) {
-        const errorData = error as any;
-        toast.error(errorData?.data?.message);
+      // Add a check to ensure 'error' is an object and has a 'data' property
+      if (typeof error === 'object' && error !== null && 'data' in error) {
+        const errorMessage = error as any;
+        toast.error(errorMessage.data.message);
+      } else {
+        // Fallback for unexpected error types
+        toast.error("An unexpected error occurred");
       }
     }
   }, [data, isSuccess, error]);

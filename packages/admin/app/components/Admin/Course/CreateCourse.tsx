@@ -21,10 +21,15 @@ const CreateCourse = (props: Props) => {
       redirect("/admin/courses");
     }
     if (error) {
-      if ("data" in error) {
+      // Add a check to ensure 'error' is an object and has a 'data' property
+      if (typeof error === 'object' && error !== null && 'data' in error) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
+      } else {
+        // Fallback for unexpected error types
+        toast.error("An unexpected error occurred");
       }
+
     }
   }, [isLoading, isSuccess, error]);
 

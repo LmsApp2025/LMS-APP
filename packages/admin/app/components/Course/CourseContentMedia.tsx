@@ -124,15 +124,24 @@ const CourseContentMedia = ({
       }
     }
     if (error) {
-      if ("data" in error) {
+      // Add a check to ensure 'error' is an object and has a 'data' property
+      if (typeof error === 'object' && error !== null && 'data' in error) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
+      } else {
+        // Fallback for unexpected error types
+        toast.error("An unexpected error occurred");
       }
+
     }
     if (answerError) {
-      if ("data" in answerError) {
+      // Add a check to ensure 'error' is an object and has a 'data' property
+      if (typeof error === 'object' && error !== null && 'data' in error) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
+      } else {
+        // Fallback for unexpected error types
+        toast.error("An unexpected error occurred");
       }
     }
     if (reviewSuccess) {
@@ -146,9 +155,13 @@ const CourseContentMedia = ({
       });
     }
     if (reviewError) {
-      if ("data" in reviewError) {
+      // Add a check to ensure 'error' is an object and has a 'data' property
+      if (typeof error === 'object' && error !== null && 'data' in error) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
+      } else {
+        // Fallback for unexpected error types
+        toast.error("An unexpected error occurred");
       }
     }
     if (replySuccess) {
@@ -156,9 +169,13 @@ const CourseContentMedia = ({
       courseRefetch();
     }
     if (replyError) {
-      if ("data" in replyError) {
+      // Add a check to ensure 'error' is an object and has a 'data' property
+      if (typeof error === 'object' && error !== null && 'data' in error) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
+      } else {
+        // Fallback for unexpected error types
+        toast.error("An unexpected error occurred");
       }
     }
   }, [

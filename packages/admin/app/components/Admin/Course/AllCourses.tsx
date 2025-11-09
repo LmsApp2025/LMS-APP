@@ -127,13 +127,17 @@ const AllCourses = (props: Props) => {
       refetch();
       toast.success("Course Deleted Successfully");
     }
-    if (error) {
-      if ("data" in error) {
+     if (error) {
+      // Add a check to ensure 'error' is an object and has a 'data' property
+      if (typeof error === 'object' && error !== null && 'data' in error) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
+      } else {
+        // Fallback for unexpected error types
+        toast.error("An unexpected error occurred");
       }
     }
-  }, [isSuccess, error,refetch]);
+  }, [isSuccess, error, refetch]);
 
   const handleDelete = async () => {
     const id = courseId;
