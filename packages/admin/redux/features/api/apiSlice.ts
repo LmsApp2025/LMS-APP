@@ -1,31 +1,46 @@
 // C:\LMS App copy Part 2\Lms-App - Copy\admin\redux\features\api\apiSlice.ts
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery, BaseQueryFn } from "@reduxjs/toolkit/query/react";
 import { userLoggedIn } from "../auth/authSlice";
 import Cookies from "js-cookie";
 
+// 1. Define the original baseQuery without a baseUrl for relative requests
+const baseQuery = fetchBaseQuery({
+  baseUrl: '', // This is left empty for relative paths
+  prepareHeaders: (headers, { getState }) => {
+    const accessToken = Cookies.get("accessToken");
+    const refreshToken = Cookies.get("refreshToken");
+
+    if (accessToken) {
+      headers.set("access-token", accessToken);
+    }
+    if (refreshToken) {
+      headers.set("refresh-token", refreshToken);
+    }
+
+    // Add the ngrok header to bypass the warning page in development if needed
+    headers.set("ngrok-skip-browser-warning", "true");
+
+    return headers;
+  },
+});
+
+// 2. Create a wrapper function to prepend the API prefix to every request
+const baseQueryWithPrefix: BaseQueryFn = async (args, api, extraOptions) => {
+    const url = typeof args === 'string' ? args : args.url;
+    const newArgs = typeof args === 'string' 
+        ? `/api/v1/${url}` 
+        : { ...args, url: `/api/v1/${url}` };
+    
+    // Call the original baseQuery with the modified arguments
+    return baseQuery(newArgs, api, extraOptions);
+};
+
+
+// 3. Define the apiSlice using the new baseQuery wrapper
 export const apiSlice = createApi({
   reducerPath: "api",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_SERVER_URI,
-    prepareHeaders: (headers, { getState }) => {
-      const accessToken = Cookies.get("accessToken");
-      const refreshToken = Cookies.get("refreshToken");
-
-      if (accessToken) {
-        headers.set("access-token", accessToken);
-      }
-      if (refreshToken) {
-        headers.set("refresh-token", refreshToken);
-      }
-
-      // Add the ngrok header to bypass the warning page in development if needed
-      // Note: This won't affect production deployments to Vercel/Railway.
-      headers.set("ngrok-skip-browser-warning", "true");
-
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithPrefix, // <-- Use the new wrapper here
 
   // Register all custom tags used for caching and re-fetching
   tagTypes: ["Users", "Courses", "Orders", "AssignmentSubmissions", "QuizSubmissions", "Students", "Banners"],
@@ -42,7 +57,7 @@ export const apiSlice = createApi({
     
     // Endpoint for loading the current user's data if a token exists
     loadUser: builder.query({
-      query: () => "me", // Simple string endpoint for a GET request
+      query: () => "me", // This will now correctly become /api/v1/me
       async onQueryStarted(arg, { queryFulfilled, dispatch }) {
         try {
           const result = await queryFulfilled;
@@ -71,5 +86,5 @@ export const apiSlice = createApi({
 export const { 
     useRefreshTokenQuery, 
     useLoadUserQuery, 
-    useLazyLoadUserQuery // This is now correctly exported.
+    useLazyLoadUserQuery
 } = apiSlice;
