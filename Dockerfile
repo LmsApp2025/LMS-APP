@@ -48,10 +48,14 @@ RUN npm install --omit=dev
 COPY --from=admin-builder /app/packages/admin/.next ./packages/admin/.next
 COPY --from=admin-builder /app/packages/admin/public ./packages/admin/public
 COPY --from=admin-builder /app/packages/admin/next.config.js ./packages/admin/next.config.js 
+COPY --from=admin-builder /app/packages/admin/package.json ./packages/admin/package.json
 
 # Copy the built server code and assets from the server-builder stage
 COPY --from=server-builder /app/packages/server/build ./build
 COPY --from=server-builder /app/packages/server/mails ./mails
+
+# Add this line for debugging
+RUN ls -laR /app
 
 EXPOSE 8000
 
