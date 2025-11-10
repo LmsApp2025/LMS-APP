@@ -12,7 +12,12 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      // --- ADD THIS BLOCK TO SPECIFY APK ---
+      "android": {
+        "buildType": "apk"
+      }
+      // ------------------------------------
     }
   },
   "submit": {

@@ -196,8 +196,8 @@ const AdminSidebar = () => {
               {!isCollapsed && "Data"}
             </Typography>
             <Item
-              title="Users"
-              to="/admin/users"
+              title="Admins"
+              to="/admin/Admins"
               icon={<GroupsIcon className="text-black dark:text-white" />}
               selected={selected}
               setSelected={setSelected}
