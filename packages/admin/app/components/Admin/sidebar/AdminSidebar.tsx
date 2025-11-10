@@ -197,7 +197,7 @@ const AdminSidebar = () => {
             </Typography>
             <Item
               title="Admins"
-              to="/admin/Admins"
+              to="/admin/users"
               icon={<GroupsIcon className="text-black dark:text-white" />}
               selected={selected}
               setSelected={setSelected}
