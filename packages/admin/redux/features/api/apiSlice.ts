@@ -3,21 +3,22 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { type BaseQueryFn } from "@reduxjs/toolkit/query"; 
 import { userLoggedIn } from "../auth/authSlice";
-import Cookies from "js-cookie";
+//import Cookies from "js-cookie";
 
 // 1. Define the original baseQuery
 const baseQuery = fetchBaseQuery({
   baseUrl: '', 
+  credentials: "include" as const,
   prepareHeaders: (headers, { getState }) => {
-    const accessToken = Cookies.get("accessToken");
-    const refreshToken = Cookies.get("refreshToken");
+    // const accessToken = Cookies.get("accessToken");
+    // const refreshToken = Cookies.get("refreshToken");
 
-    if (accessToken) {
-      headers.set("access-token", accessToken);
-    }
-    if (refreshToken) {
-      headers.set("refresh-token", refreshToken);
-    }
+    // if (accessToken) {
+    //   headers.set("access-token", accessToken);
+    // }
+    // if (refreshToken) {
+    //   headers.set("refresh-token", refreshToken);
+    // }
     headers.set("ngrok-skip-browser-warning", "true");
     return headers;
   },
@@ -42,7 +43,7 @@ export const apiSlice = createApi({
       query: () => ({
         url: "refresh",
         method: "GET",
-        credentials: "include" as const,
+        //credentials: "include" as const,
       }),
     }),
     loadUser: builder.query({
