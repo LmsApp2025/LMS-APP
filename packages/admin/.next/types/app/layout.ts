@@ -1,8 +1,8 @@
 // File: C:\Users\hp pavillion 15\Desktop\LMS-Railway-Project\LMS-Project\packages\admin\app\layout.tsx
-import * as entry from '../../../app/layout.js'
+import * as entry from '../../../app/layout.jsx'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
-type TEntry = typeof import('../../../app/layout.js')
+type TEntry = typeof import('../../../app/layout.jsx')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

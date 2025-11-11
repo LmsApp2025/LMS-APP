@@ -3,8 +3,8 @@
 'use client'
 import React from 'react'
 import AdminSidebar from "../../../components/Admin/sidebar/AdminSidebar";
-import Heading from '../../../../app/utils/Heading';
-import DashboardHeader from '../../../../app/components/Admin/DashboardHeader';
+import Heading from '../../../utils/Heading';
+import DashboardHeader from '../../../components/Admin/DashboardHeader';
 import CourseEnrollments from "../../../components/Admin/Course/CourseEnrollments";
 
 type Props = {}

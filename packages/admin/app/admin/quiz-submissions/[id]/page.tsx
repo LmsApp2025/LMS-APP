@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import AdminSidebar from "../../../components/Admin/sidebar/AdminSidebar";
-import Heading from '../../../../app/utils/Heading';
+import Heading from '../../../utils/Heading';
 import DashboardHeader from '../../../components/Admin/DashboardHeader';
 import QuizSubmissions from '../../../components/Admin/Submissions/QuizSubmissions';
 

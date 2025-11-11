@@ -1,9 +1,9 @@
 'use client'
 import React from 'react'
-import AdminSidebar from "../../../../app/components/Admin/sidebar/AdminSidebar";
-import Heading from '../../../../app/utils/Heading';
-import DashboardHeader from '../../../../app/components/Admin/DashboardHeader';
-import AssignmentSubmissions from '../../../../app/components/Admin/Submissions/AssignmentSubmissions';
+import AdminSidebar from "../../../components/Admin/sidebar/AdminSidebar";
+import Heading from '../../../utils/Heading';
+import DashboardHeader from '../../../components/Admin/DashboardHeader';
+import AssignmentSubmissions from '../../../components/Admin/Submissions/AssignmentSubmissions';
 
 type Props = { 
     params: { id: string } // More specific type for params

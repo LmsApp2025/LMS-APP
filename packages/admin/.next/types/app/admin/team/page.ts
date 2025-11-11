@@ -1,8 +1,8 @@
 // File: C:\Users\hp pavillion 15\Desktop\LMS-Railway-Project\LMS-Project\packages\admin\app\admin\team\page.tsx
-import * as entry from '../../../../../app/admin/team/page.js'
+import * as entry from '../../../../../app/admin/team/page.jsx'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
-type TEntry = typeof import('../../../../../app/admin/team/page.js')
+type TEntry = typeof import('../../../../../app/admin/team/page.jsx')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

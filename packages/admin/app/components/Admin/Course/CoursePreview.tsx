@@ -2,7 +2,7 @@
 
 import React, { FC } from "react";
 import CoursePlayer from "../../../utils/CoursePlayer"; // This will need a dummy video URL for preview
-import { styles } from "../../../../app/styles/style";
+import { styles } from "../../../styles/style";
 
 type Props = {
   active: number;

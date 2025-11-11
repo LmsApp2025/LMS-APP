@@ -5,7 +5,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { IoCheckmarkDoneOutline, IoCloseOutline } from "react-icons/io5";
 import { format } from "timeago.js";
-import CourseContentList from "../Course/CourseContentList";
+import CourseContentList from "./CourseContentList";
 import { Elements } from "@stripe/react-stripe-js";
 //import CheckOutForm from "../Payment/CheckOutForm";
 import { useLoadUserQuery } from "@/redux/features/api/apiSlice";

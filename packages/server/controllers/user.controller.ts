@@ -414,18 +414,68 @@ export const getStudentInfo = CatchAsyncError(
   }
 );
 
+// export const updateAccessToken = CatchAsyncError(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//       const refresh_token = req.cookies.refresh_token || (req.headers['refresh-token'] as string);
+//       if (!refresh_token) { return next(new ErrorHandler("Refresh token not found", 400)); }
+
+//       const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN!) as JwtPayload;
+//       if (!decoded || !decoded.id) { return next(new ErrorHandler("Invalid refresh token", 400)); }
+      
+//       const session = await redis.get(decoded.id);
+//       if (!session) { return next(new ErrorHandler("Session expired", 400)); }
+
+//       let user;
+//       if (decoded.role === 'admin') {
+//           user = await AdminModel.findById(decoded.id);
+//       } else {
+//           user = await StudentModel.findById(decoded.id).populate("courses");
+//       }
+
+//       if (!user) { return next(new ErrorHandler("User not found", 400)); }
+
+//       const accessTokenExpire = parseInt(process.env.ACCESS_TOKEN_EXPIRE || "15", 10);
+//       const refreshTokenExpire = parseInt(process.env.REFRESH_TOKEN_EXPIRE || "30", 10);
+
+//       const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.ACCESS_TOKEN!, { expiresIn: `${accessTokenExpire}m` });
+//       const newRefreshToken = jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_TOKEN!, { expiresIn: `${refreshTokenExpire}d` });
+
+//       req.user = user;
+      
+//       // THE FIX: Overwrite the Redis session with a simple marker and the correct TTL.
+//       const sessionDurationInSeconds = refreshTokenExpire * 24 * 60 * 60;
+//       await redis.set(user._id.toString(), JSON.stringify({ "session": "valid" }), "EX", sessionDurationInSeconds);
+
+//       res.cookie("access_token", accessToken, accessTokenOptions);
+//       res.cookie("refresh_token", newRefreshToken, refreshTokenOptions);
+      
+//       res.status(200).json({ success: true, user, accessToken, refreshToken: newRefreshToken });
+//     } catch (error: any) { return next(new ErrorHandler(error.message, 400)); }
+//   }
+// );
+
+// In: packages/server/controllers/user.controller.ts
+
 export const updateAccessToken = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const refresh_token = req.cookies.refresh_token || (req.headers['refresh-token'] as string);
-      if (!refresh_token) { return next(new ErrorHandler("Refresh token not found", 400)); }
+      if (!refresh_token) {
+        return next(new ErrorHandler("Please login to access this resource", 400));
+      }
 
       const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN!) as JwtPayload;
-      if (!decoded || !decoded.id) { return next(new ErrorHandler("Invalid refresh token", 400)); }
-      
-      const session = await redis.get(decoded.id);
-      if (!session) { return next(new ErrorHandler("Session expired", 400)); }
+      if (!decoded || !decoded.id) {
+        return next(new ErrorHandler("Could not refresh token, please login again.", 400));
+      }
 
+      const session = await redis.get(decoded.id);
+      if (!session) {
+        return next(new ErrorHandler("Session expired, please login again.", 400));
+      }
+
+      // Find the user based on the role stored in the token
       let user;
       if (decoded.role === 'admin') {
           user = await AdminModel.findById(decoded.id);
@@ -433,27 +483,20 @@ export const updateAccessToken = CatchAsyncError(
           user = await StudentModel.findById(decoded.id).populate("courses");
       }
 
-      if (!user) { return next(new ErrorHandler("User not found", 400)); }
+      if (!user) {
+        return next(new ErrorHandler("User not found, please login again.", 400));
+      }
 
-      const accessTokenExpire = parseInt(process.env.ACCESS_TOKEN_EXPIRE || "15", 10);
-      const refreshTokenExpire = parseInt(process.env.REFRESH_TOKEN_EXPIRE || "30", 10);
+      // The user is valid. Now, simply call sendToken to generate new tokens
+      // and correctly update the Redis session with the full user object.
+      sendToken(user, 200, res);
 
-      const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.ACCESS_TOKEN!, { expiresIn: `${accessTokenExpire}m` });
-      const newRefreshToken = jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_TOKEN!, { expiresIn: `${refreshTokenExpire}d` });
-
-      req.user = user;
-      
-      // THE FIX: Overwrite the Redis session with a simple marker and the correct TTL.
-      const sessionDurationInSeconds = refreshTokenExpire * 24 * 60 * 60;
-      await redis.set(user._id.toString(), JSON.stringify({ "session": "valid" }), "EX", sessionDurationInSeconds);
-
-      res.cookie("access_token", accessToken, accessTokenOptions);
-      res.cookie("refresh_token", newRefreshToken, refreshTokenOptions);
-      
-      res.status(200).json({ success: true, user, accessToken, refreshToken: newRefreshToken });
-    } catch (error: any) { return next(new ErrorHandler(error.message, 400)); }
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
   }
 );
+
 
 export const updateUserEnrollment = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
