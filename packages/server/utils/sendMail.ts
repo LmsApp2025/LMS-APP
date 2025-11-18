@@ -1,6 +1,6 @@
 require('dotenv').config();
 //import sgMail from '@sendgrid/mail';
-//import nodemailer, {Transporter} from 'nodemailer';
+//import nodemailer, {Transporter} sefrom 'nodemailer';
 import { Resend } from 'resend';
 import ejs from 'ejs';
 import path from 'path';
