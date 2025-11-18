@@ -1,7 +1,7 @@
 require('dotenv').config();
 //import sgMail from '@sendgrid/mail';
-//import nodemailer, {Transporter} from 'nodemailer';
-import { Resend } from 'resend';
+import nodemailer, {Transporter} from 'nodemailer';
+//import { Resend } from 'resend';
 import ejs from 'ejs';
 import path from 'path';
 
@@ -17,16 +17,16 @@ interface EmailOptions{
 
 const sendMail = async (options: EmailOptions):Promise <void> => {
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    // const transporter: Transporter = nodemailer.createTransport({
-    //     host: process.env.SMTP_HOST,
-    //     port: parseInt(process.env.SMTP_PORT || '587'),
-    //     service: process.env.SMTP_SERVICE,
-    //     auth:{
-    //         user: process.env.SMTP_MAIL,
-    //         pass: process.env.SMTP_PASSWORD,
-    //     },
-    // });
+    //const resend = new Resend(process.env.RESEND_API_KEY);
+    const transporter: Transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        service: process.env.SMTP_SERVICE,
+        auth:{
+            user: process.env.SMTP_MAIL,
+            pass: process.env.SMTP_PASSWORD,
+        },
+    });
 
     const {email,subject,template,data} = options;
 
@@ -36,22 +36,22 @@ const sendMail = async (options: EmailOptions):Promise <void> => {
     // Render the email template with EJS
     const html:string = await ejs.renderFile(templatePath,data);
 
-     try {
-        // Send the email using Resend
-        await resend.emails.send({
-            // This 'from' address is required by Resend for onboarding
-            from: 'onboarding@resend.dev',
-            // 'to' is the email of the user who is signing up
-            to: email,
-            subject: subject,
-            html: html,
-        });
-        console.log(`Email sent successfully to ${email} via Resend`);
-    } catch (error) {
-        console.error('Error sending email via Resend:', error);
-        // Throwing an error ensures the calling function knows something went wrong
-        throw new Error('Failed to send email.');
-    }
+    //  try {
+    //     // Send the email using Resend
+    //     await resend.emails.send({
+    //         // This 'from' address is required by Resend for onboarding
+    //         from: 'onboarding@resend.dev',
+    //         // 'to' is the email of the user who is signing up
+    //         to: email,
+    //         subject: subject,
+    //         html: html,
+    //     });
+    //     console.log(`Email sent successfully to ${email} via Resend`);
+    // } catch (error) {
+    //     console.error('Error sending email via Resend:', error);
+    //     // Throwing an error ensures the calling function knows something went wrong
+    //     throw new Error('Failed to send email.');
+    // }
 
     // const msg = {
     //     to: email,
@@ -70,14 +70,14 @@ const sendMail = async (options: EmailOptions):Promise <void> => {
     //     throw new Error('Failed to send email.');
     // }
 
-    // const mailOptions = {
-    //     from: process.env.SMTP_MAIL,
-    //     to: email,
-    //     subject,
-    //     html
-    // };
+    const mailOptions = {
+        from: process.env.SMTP_MAIL,
+        to: email,
+        subject,
+        html
+    };
 
-    // await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 };
 
 export default sendMail;
