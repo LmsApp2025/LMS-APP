@@ -1,8 +1,7 @@
 {
-  "name": "marstech-client",
+  "name": "marstech",
   "main": "expo-router/entry",
   "version": "1.0.0",
-  "private": true,
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",

@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { View, Text, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 import {
   widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
+  //heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 //import Ratings from "@/utils/ratings";
 import useUser from "@/hooks/auth/useUser"; // MODIFICATION: Import the useUser hook
