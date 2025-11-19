@@ -40,7 +40,7 @@ const sendMail = async (options: EmailOptions):Promise <void> => {
     //     // Send the email using Resend
          await resend.emails.send({
     //         // This 'from' address is required by Resend for onboarding
-             from: 'onboarding@resend.dev',
+             from:`Marstech LMS <${process.env.RESEND_SENDER_EMAIL!}>`,
     //         // 'to' is the email of the user who is signing up
             to: email,
             subject: subject,
