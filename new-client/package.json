@@ -22,7 +22,7 @@
     "@stripe/stripe-react-native": "0.45.0",
     "axios": "^1.11.0",
     "deprecated-react-native-prop-types": "^2.3.0",
-    "expo": "~53.0.23",
+    "expo": "~53.0.24",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
     "expo-dev-client": "~5.2.4",
