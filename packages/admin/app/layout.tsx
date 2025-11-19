@@ -1,11 +1,10 @@
-// In: packages/admin/app/layout.tsx
-import React, { type ReactNode } from "react"; 
 import "./globals.css";
 import { Poppins } from "next/font/google";
 import { Josefin_Sans } from "next/font/google";
+import { ThemeProvider } from "./utils/theme-provider";
 import { Toaster } from "react-hot-toast";
-import { Providers } from "./Provider"; // For the loader
-import { ClientProviders } from "./ClientProviders"; // For the context providers
+// THE FIX: We no longer import or use 'Custom'. We only need 'Providers'.
+import { Providers } from "./Provider";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -22,64 +21,21 @@ const josefin = Josefin_Sans({
 export default function RootLayout({
   children,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body
         className={`${poppins.variable} ${josefin.variable} !bg-white bg-no-repeat dark:bg-gradient-to-b dark:from-gray-900 dark:to-black duration-300`}
       >
-        {/* ClientProviders wraps everything INSIDE the body, providing context to all children */}
-        <ClientProviders attribute="class" defaultTheme="system" enableSystem>
-          {/* Providers now just handles the initial loading state */}
-          <Providers>
-            {children}
-          </Providers>
-          <Toaster position="top-center" reverseOrder={false} />
-        </ClientProviders>
+        {/* THE FIX: The structure is now simpler. Providers wraps ThemeProvider. */}
+        <Providers>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              {children}
+              <Toaster position="top-center" reverseOrder={false} />
+            </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
 }
-
-// import "./globals.css";
-// import { Poppins } from "next/font/google";
-// import { Josefin_Sans } from "next/font/google";
-// import { ThemeProvider } from "./utils/theme-provider";
-// import { Toaster } from "react-hot-toast";
-// // THE FIX: We no longer import or use 'Custom'. We only need 'Providers'.
-// import { Providers } from "./Provider";
-
-// const poppins = Poppins({
-//   subsets: ["latin"],
-//   weight: ["400", "500", "600", "700"],
-//   variable: "--font-Poppins",
-// });
-
-// const josefin = Josefin_Sans({
-//   subsets: ["latin"],
-//   weight: ["400", "500", "600", "700"],
-//   variable: "--font-Josefin",
-// });
-
-// export default function RootLayout({
-//   children,
-// }: {
-//   children: React.ReactNode;
-// }) {
-//   return (
-//     <html lang="en" suppressHydrationWarning={true}>
-//       <body
-//         className={`${poppins.variable} ${josefin.variable} !bg-white bg-no-repeat dark:bg-gradient-to-b dark:from-gray-900 dark:to-black duration-300`}
-//       >
-//         {/* THE FIX: The structure is now simpler. Providers wraps ThemeProvider. */}
-//         <Providers>
-//             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-//               {children}
-//               <Toaster position="top-center" reverseOrder={false} />
-//             </ThemeProvider>
-//         </Providers>
-//       </body>
-//     </html>
-//   );
-// }
