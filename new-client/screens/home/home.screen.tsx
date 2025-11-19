@@ -6,7 +6,7 @@ import Header from "@/components/header/header";
 // import SearchInput from "@/components/common/search.input";
 import HomeBannerSlider from "@/components/home/home.banner.slider";
 import { useEffect, useState, useMemo, useCallback } from "react";
-import axios from "axios";
+//import axios from "axios";
 import axiosInstance from "@/utils/axios.instance";
 import { SERVER_URI } from "@/utils/uri";
 import Loader from "@/components/loader/loader";
@@ -30,7 +30,7 @@ import Categories from "@/components/home/Categories";
 export default function HomeScreen() {
   const [courses, setCourses] = useState<CoursesType[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue] = useState("");
 
   // CORRECTED FONT LOADING
 
@@ -47,7 +47,7 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       refetchUser();
-    }, [])
+    }, [refetchUser])
   );
 
   useEffect(() => {
@@ -62,8 +62,8 @@ export default function HomeScreen() {
             params: { objectName: user.avatar.public_id }
           });
           setDisplayAvatarUrl(res.data.url);
-        } catch (e) {
-          console.log("Could not fetch MinIO avatar URL for Header, using fallback.");
+        } catch (error) {
+          console.log("Could not fetch MinIO avatar URL for Header, using fallback.", error);
           setDisplayAvatarUrl(null); // Fallback will be handled in Header
         }
       } else if (user.avatar?.url) {
@@ -78,7 +78,7 @@ export default function HomeScreen() {
 
 
   useEffect(() => {
-    axios
+    axiosInstance
       .get(`${SERVER_URI}/get-courses`)
       .then((res: any) => {
         setCourses(res.data.courses || []); // Ensure courses is always an array

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axiosInstance from "@/utils/axios.instance";
 import { SERVER_URI } from '@/utils/uri';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -19,7 +20,7 @@ export default function useGetSubmission(assignmentId: string) {
       const refreshToken = await AsyncStorage.getItem("refresh_token");
 
       try {
-        const res = await axios.get(`${SERVER_URI}/user-submission/${assignmentId}`, {
+        const res = await axiosInstance.get(`${SERVER_URI}/user-submission/${assignmentId}`, {
           headers: {
             "access-token": accessToken,
             "refresh-token": refreshToken,

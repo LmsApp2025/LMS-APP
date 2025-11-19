@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
-import axios from 'axios';
+//import axios from 'axios';
+import axiosInstance from "@/utils/axios.instance";
 import { SERVER_URI } from '@/utils/uri';
 import { Raleway_700Bold } from "@expo-google-fonts/raleway";
 import { useFonts } from "expo-font";
@@ -27,7 +28,7 @@ export default function Categories() {
 
   useEffect(() => {
     // Fetch categories from the layout endpoint on the server
-    axios.get(`${SERVER_URI}/get-layout/Categories`)
+    axiosInstance.get(`${SERVER_URI}/get-layout/Categories`)
       .then(res => {
         if (res.data.layout && res.data.layout.categories) {
           setCategories(res.data.layout.categories);

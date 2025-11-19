@@ -1,7 +1,8 @@
 import { View, Image, ActivityIndicator, StyleSheet, Dimensions } from "react-native";
 import Swiper from "react-native-swiper";
 import { useEffect, useState } from "react";
-import axios from "axios";
+//import axios from "axios";
+import axiosInstance from "@/utils/axios.instance";
 import { SERVER_URI } from "@/utils/uri";
 import {heightPercentageToDP as hp} from "react-native-responsive-screen";
 //import axiosInstance from "@/utils/axios.instance";
@@ -22,7 +23,7 @@ export default function HomeBannerSlider() {
 
   useEffect(() => {
     // THE FIX: Fetch images from the new /get-banners endpoint
-    axios.get(`${SERVER_URI}/get-banners`, {
+    axiosInstance.get(`${SERVER_URI}/get-banners`, {
         headers: { 'ngrok-skip-browser-warning': 'true' }
     })
       .then(res => {

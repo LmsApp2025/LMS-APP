@@ -6,7 +6,8 @@ import {
 import React, { useRef, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+//import axios from "axios";
+import axiosInstance from "@/utils/axios.instance";
 import { SERVER_URI } from "@/utils/uri";
 import { Toast } from "react-native-toast-notifications";
 
@@ -35,7 +36,7 @@ export default function VerifyAccountScreen() {
         return;
     }
     setIsLoading(true);
-    await axios
+    await axiosInstance
       .post(`${SERVER_URI}/student-verify-otp`, {
         userId: userId,
         otp: otp,

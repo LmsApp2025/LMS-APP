@@ -1,8 +1,9 @@
-import { SERVER_URI } from "@/utils/uri";
+//import { SERVER_URI } from "@/utils/uri";
 import { Entypo, FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStripe } from "@stripe/stripe-react-native";
-import axios from "axios";
+//import axios from "axios";
+import axiosInstance from "@/utils/axios.instance";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -57,23 +58,35 @@ export default function CartScreen() {
     setCartItems(updatedCartData);
   };
 
+  // const handlePayment = async () => {
+  //   try {
+  //     const accessToken = await AsyncStorage.getItem("access_token");
+  //     const refreshToken = await AsyncStorage.getItem("refresh_token");
+  //     const amount = Math.round(
+  //       cartItems.reduce((total, item) => total + item.price, 0) * 100
+  //     );
+
+  //     const paymentIntentResponse = await axios.post(
+  //       `${SERVER_URI}/payment`,
+  //       { amount },
+  //       {
+  //         headers: {
+  //           "access-token": accessToken,
+  //           "refresh-token": refreshToken,
+  //         },
+  //       }
+  //     );
+
   const handlePayment = async () => {
     try {
-      const accessToken = await AsyncStorage.getItem("access_token");
-      const refreshToken = await AsyncStorage.getItem("refresh_token");
       const amount = Math.round(
         cartItems.reduce((total, item) => total + item.price, 0) * 100
       );
 
-      const paymentIntentResponse = await axios.post(
-        `${SERVER_URI}/payment`,
-        { amount },
-        {
-          headers: {
-            "access-token": accessToken,
-            "refresh-token": refreshToken,
-          },
-        }
+      // Use axiosInstance for authenticated request
+      const paymentIntentResponse = await axiosInstance.post(
+        `/payment`,
+        { amount }
       );
 
       const { client_secret: clientSecret } = paymentIntentResponse.data;
@@ -100,30 +113,50 @@ export default function CartScreen() {
     }
   };
 
-  const createOrder = async (paymentResponse: any) => {
-    const accessToken = await AsyncStorage.getItem("access_token");
-    const refreshToken = await AsyncStorage.getItem("refresh_token");
+  // const createOrder = async (paymentResponse: any) => {
+  //   const accessToken = await AsyncStorage.getItem("access_token");
+  //   const refreshToken = await AsyncStorage.getItem("refresh_token");
 
-    // Handle multiple items in the cart by creating an order for each one.
-    // Stripe handles the single payment for the total amount.
+  //   // Handle multiple items in the cart by creating an order for each one.
+  //   // Stripe handles the single payment for the total amount.
+  //   for (const item of cartItems) {
+  //     try {
+  //       await axios.post(
+  //         `${SERVER_URI}/create-mobile-order`,
+  //         {
+  //           courseId: item._id,
+  //           payment_info: paymentResponse,
+  //         },
+  //         {
+  //           headers: {
+  //             "access-token": accessToken,
+  //             "refresh-token": refreshToken,
+  //           },
+  //         }
+  //       );
+  //     } catch (error) {
+  //       console.log(`Error creating order for course ${item._id}:`, error);
+  //       // Decide how to handle partial failures, e.g., notify the user.
+  //     }
+  //   }
+    
+  //   setOrderSuccess(true);
+  //   await AsyncStorage.removeItem("cart");
+  // };
+
+  const createOrder = async (paymentResponse: any) => {
     for (const item of cartItems) {
       try {
-        await axios.post(
-          `${SERVER_URI}/create-mobile-order`,
+        // Use axiosInstance for authenticated request
+        await axiosInstance.post(
+          `/create-mobile-order`,
           {
             courseId: item._id,
             payment_info: paymentResponse,
-          },
-          {
-            headers: {
-              "access-token": accessToken,
-              "refresh-token": refreshToken,
-            },
           }
         );
       } catch (error) {
         console.log(`Error creating order for course ${item._id}:`, error);
-        // Decide how to handle partial failures, e.g., notify the user.
       }
     }
     

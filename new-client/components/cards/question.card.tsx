@@ -1,7 +1,8 @@
 import { SERVER_URI } from "@/utils/uri";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+//import axios from "axios";
+import axiosInstance from "@/utils/axios.instance";
 import { useState } from "react";
 import {
   View,
@@ -33,7 +34,7 @@ export default function QuestionsCard({
     const accessToken = await AsyncStorage.getItem("access_token");
     const refreshToken = await AsyncStorage.getItem("refresh_token");
 
-    await axios
+    await axiosInstance
       .put(
         `${SERVER_URI}/add-answer`,
         {

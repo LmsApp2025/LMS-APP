@@ -114,6 +114,7 @@ type CoursesType = {
   _id: string;
   name: string;
   description: string;
+  categoryId: string;
   price: number; // MODIFICATION: Added price
   estimatedPrice?: number; // MODIFICATION: Added estimatedPrice
   level: string; // MODIFICATION: Added level

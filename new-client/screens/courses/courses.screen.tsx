@@ -1,7 +1,8 @@
 // C:\Lms-App - Copy\client\screens\courses\courses.screen.tsx
 
 import { SERVER_URI } from "@/utils/uri";
-import axios from "axios";
+//import axios from "axios";
+import axiosInstance from "@/utils/axios.instance";
 import { useEffect, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useFonts, Raleway_700Bold } from "@expo-google-fonts/raleway";
@@ -15,7 +16,7 @@ export default function CoursesScreen() {
 
   useEffect(() => {
     // We only need to fetch the courses now
-    axios
+    axiosInstance
       .get(`${SERVER_URI}/get-courses`, {
         headers: { 'ngrok-skip-browser-warning': 'true' }
     })

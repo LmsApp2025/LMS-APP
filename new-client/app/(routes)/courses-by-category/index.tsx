@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import axios from 'axios';
+//import axios from 'axios';
+import axiosInstance from '@/utils/axios.instance';
 import { SERVER_URI } from '@/utils/uri';
 import CourseCard from '@/components/cards/course.card';
 import Loader from '@/components/loader/loader';
@@ -20,14 +21,15 @@ export default function CoursesByCategoryScreen() {
         setLoading(true);
         // We'll need a new server endpoint for this, but for now, we'll filter on the client.
         // In a future step, we can optimize this on the server.
-        const res = await axios.get(`${SERVER_URI}/get-courses`);
+        const res = await axiosInstance.get(`${SERVER_URI}/get-courses`);
         const allCourses: CoursesType[] = res.data.courses;
         
         // This is a placeholder filter. We need to add categories to the course model.
         // For now, let's assume this works if the data is available.
-        // const filtered = allCourses.filter(c => c.categoryId === categoryId);
+        const filtered = allCourses.filter(c => c.categoryId === categoryId);
         // For now, just show all courses as a placeholder.
-        setCourses(allCourses);
+        //setCourses(allCourses);
+        setCourses(filtered);
 
       } catch (error) {
         console.error("Failed to fetch courses by category:", error);

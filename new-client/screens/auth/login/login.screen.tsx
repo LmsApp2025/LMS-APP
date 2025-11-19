@@ -8,7 +8,8 @@ import { Nunito_700Bold, Nunito_600SemiBold } from "@expo-google-fonts/nunito";
 import { useState } from "react";
 import { commonStyles } from "@/styles/common/common.styles";
 import { router } from "expo-router";
-import axios from "axios";
+//import axios from "axios";
+import axiosInstance from "@/utils/axios.instance";
 import { SERVER_URI } from "@/utils/uri";
 import { Toast } from "react-native-toast-notifications";
 
@@ -29,7 +30,7 @@ export default function LoginScreen() {
         return;
     }
     setButtonSpinner(true);
-    await axios
+    await axiosInstance
       .post(`${SERVER_URI}/student-login`, {
         username: userInfo.username,
         password: userInfo.password,

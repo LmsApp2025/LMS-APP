@@ -5,8 +5,9 @@ import Loader from "@/components/loader/loader";
 import useUser from "@/hooks/auth/useUser";
 import { LinearGradient } from "expo-linear-gradient";
 import { FlatList, View, Text, RefreshControl } from "react-native"; // <-- Import RefreshControl
-import axios from "axios";
+//import axios from "axios";
 import { SERVER_URI } from "@/utils/uri";
+import axiosInstance from "@/utils/axios.instance";
 
 export default function EnrolledCoursesScreen() {
   // THE FIX: Get the refetch function from the useUser hook
@@ -19,7 +20,7 @@ export default function EnrolledCoursesScreen() {
     if (user && user.courses && user.courses.length > 0) {
       try {
         const courseDetailPromises = user.courses.map(enrolledCourse =>
-          axios.get(`${SERVER_URI}/get-course/${enrolledCourse._id}`)
+          axiosInstance.get(`${SERVER_URI}/get-course/${enrolledCourse._id}`)
         );
         const responses = await Promise.all(courseDetailPromises);
         const fetchedCourses = responses.map(res => res.data.course);
@@ -47,7 +48,7 @@ export default function EnrolledCoursesScreen() {
     await refetchUser(); // Refetch the core user data
     // The useEffect will automatically re-run and fetch the full course details
     setIsRefreshing(false);
-  }, []);
+  }, [refetchUser]);
 
   const isLoading = userLoading || loadingCourses;
 
