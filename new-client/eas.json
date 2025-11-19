@@ -6,16 +6,23 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "projectDir": "new-client"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "projectDir": "new-client"
+      }
     },
     "production": {
       "autoIncrement": true,
       // --- ADD THIS BLOCK TO SPECIFY APK ---
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "projectDir": "new-client"
       }
       // ------------------------------------
     }
