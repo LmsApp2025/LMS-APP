@@ -14,6 +14,7 @@ const nextConfig = {
   // Ensure only one instance of React is loaded
   webpack: (config) => {
     config.resolve.alias.react = require.resolve("react");
+    config.resolve.alias["react-dom"] = require.resolve("react-dom");
     return config;
   },
   // experimental: {

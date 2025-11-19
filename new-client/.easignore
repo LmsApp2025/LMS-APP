@@ -1,24 +1,17 @@
-# new-client/.easignore
+# Ignore parent monorepo folders to prevent context confusion
+../packages
+../node_modules
+../.git
+../Dockerfile
+../README.md
+../package.json
+../package-lock.json
 
-# Ignore node_modules
+# Standard Expo ignores
 node_modules/
 .expo/
 dist/
 web-build/
-
-# Ignore parent directories to prevent context confusion
-../packages/
-../node_modules/
-../Dockerfile
-../.git/
-
-# Ignore local env files for security (EAS secrets should be used instead)
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env
+.env.*
 *.pem
-
-# Native builds
-android/
-ios/
