@@ -1,17 +1,34 @@
-# Ignore parent monorepo folders to prevent context confusion
-../packages
-../node_modules
-../.git
-../Dockerfile
-../README.md
-../package.json
-../package-lock.json
+# new-client/.easignore
 
-# Standard Expo ignores
+# Standard ignores
 node_modules/
 .expo/
 dist/
 web-build/
 .env
-.env.*
+.env.local
+.env.*.local
 *.pem
+
+# Android/iOS folders (generated native code shouldn't be uploaded if using managed/prebuild)
+android/
+ios/
+
+
+# # Ignore parent monorepo folders to prevent context confusion
+# ../packages
+# ../node_modules
+# ../.git
+# ../Dockerfile
+# ../README.md
+# ../package.json
+# ../package-lock.json
+
+# # Standard Expo ignores
+# node_modules/
+# .expo/
+# dist/
+# web-build/
+# .env
+# .env.*
+# *.pem
