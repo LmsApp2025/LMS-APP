@@ -1,5 +1,4 @@
 // C:\LMS App copy Part 2\Lms-App - Copy\client\components\cards\course.card.tsx
-
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { View, Text, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
