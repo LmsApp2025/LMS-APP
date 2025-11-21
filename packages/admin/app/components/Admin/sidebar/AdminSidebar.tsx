@@ -25,8 +25,10 @@ import { useSelector } from "react-redux";
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import Cookies from "js-cookie";
+//import Cookies from "js-cookie";
 import { useLoadUserQuery } from "@/redux/features/api/apiSlice"; 
+import { useLogOutMutation } from "@/redux/features/auth/authApi";
+import { redirect } from "next/navigation";
 
 interface itemProps {
   title: string;
@@ -62,18 +64,34 @@ const AdminSidebar = () => {
   const { theme } = useTheme();
 
   const { isLoading } = useLoadUserQuery(undefined, {});
+  const [logout, {isSuccess}] = useLogOutMutation();
 
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (isSuccess) {
+        // Redirect to root (login) after successful logout
+        window.location.href = "/"; 
+    }
+  }, [isSuccess]);
 
   if (!mounted) {
     return null;
   }
 
   const logoutHandler = async () => {
-    Cookies.remove("accessToken");
-    Cookies.remove("refreshToken");
-    window.location.reload();
+     await logout({});
   };
+
+  if (!mounted) {
+    return null;
+  }
+
+  // const logoutHandler = async () => {
+  //   Cookies.remove("accessToken");
+  //   Cookies.remove("refreshToken");
+  //   window.location.reload();
+  // };
 
   return (
     <Box
@@ -333,7 +351,7 @@ const AdminSidebar = () => {
             >
               {!isCollapsed && "Extras"}
             </Typography>
-            <div onClick={logoutHandler}>
+            <div onClick={logoutHandler} style={{cursor: "pointer"}}>
               <Item
                 title="Logout"
                 to="/"
