@@ -61,7 +61,7 @@ const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
       
       // Force a full page reload to the login screen
       // This is the most reliable way to clear all state and redirect.
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
         window.location.href = '/'; 
       }
     }
@@ -116,7 +116,8 @@ export const apiSlice = createApi({
           const { data } = await queryFulfilled;
           dispatch(userLoggedIn(data as any));
         } catch (error) {
-          console.log("Initial load user failed. Redirect will be handled by reauth wrapper.");
+          // Allow silent failure on initial load if user is not logged in
+          //console.log("Initial load user failed. Redirect will be handled by reauth wrapper.");
         }
       },
     }),

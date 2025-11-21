@@ -49,7 +49,7 @@ app.use(cors({
 // 4. Rate Limiter (comes after CORS and parsers)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100, // Limit each IP to 100 requests per 15 minutes
+  max: 1000, // Limit each IP to 1000 requests per 15 minutes
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req, res) => req.method === 'OPTIONS',
