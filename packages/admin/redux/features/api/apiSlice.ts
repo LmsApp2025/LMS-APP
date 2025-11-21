@@ -42,20 +42,25 @@ const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
 
   // Check if the access token expired (status 401)
   if (result.error && result.error.status === 401) {
+    if (typeof window !== 'undefined' && window.location.pathname === '/') {
+         // If we are on login page and get 401, do nothing (let the login form handle it)
+         return result;
+    }
+
     console.log("Access token expired. Attempting to refresh...");
     
     // Attempt to get a new access token from the /refresh endpoint
     const refreshResult = await baseQuery('/refresh', api, extraOptions);
 
     if (refreshResult.data) {
-      console.log("Token refresh successful. Retrying original request...");
+      //console.log("Token refresh successful. Retrying original request...");
       // If refresh succeeds, update the Redux state with the new user/token data
       api.dispatch(userLoggedIn(refreshResult.data as any));
       
       // Retry the original request that failed, now with the new token
       result = await baseQuery(args, api, extraOptions);
     } else {
-      console.log("Token refresh failed. Logging out and redirecting.");
+      //console.log("Token refresh failed. Logging out and redirecting.");
       // If the refresh token is also expired, log the user out
       api.dispatch(userLoggedOut());
       
@@ -111,6 +116,7 @@ export const apiSlice = createApi({
   endpoints: (builder) => ({
     loadUser: builder.query({
       query: () => "me",
+      extraOptions: { maxRetries: 0 },
       async onQueryStarted(arg, { queryFulfilled, dispatch }) {
         try {
           const { data } = await queryFulfilled;
