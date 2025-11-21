@@ -1,16 +1,11 @@
-# new-client/.easignore
-
-# Ignore parent packages explicitly
-../packages
-../node_modules
-
-# Ignore local heavy files
-node_modules/
-.expo/
-dist/
-web-build/
+node_modules
+.expo
+dist
+web-build
 .env
 .env.local
 npm-debug.log
 yarn-error.log
 package-lock.json
+.DS_Store
+.git
