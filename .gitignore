@@ -10,13 +10,13 @@ yarn-error.log*
 **/package-lock.json
 
 # Server Specific
-server/build
-server/.env
-server/minio_data
+packages/server/build  
+packages/server/.env
+packages/server/minio_data
 
 # Admin (Next.js) Specific
-admin/.next
-admin/out
+packages/admin/.next   
+packages/admin/out
 
 # Client (Expo) Specific
 new-client/.expo

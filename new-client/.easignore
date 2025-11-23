@@ -1,11 +1,9 @@
-node_modules
-.expo
-dist
-web-build
-.env
-.env.local
-npm-debug.log
-yarn-error.log
-package-lock.json
-.DS_Store
-.git
+# Ignore the parent packages directory
+../packages
+
+# Ignore other root-level files if they exist
+../.gitignore
+../package.json
+../package-lock.json
+../README.md
+../Dockerfile

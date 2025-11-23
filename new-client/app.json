@@ -23,7 +23,7 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [],
-      "package": "com.myproject2025.marstech"
+      "package": "com.blog2025.marstech"
     },
     "web": {
       "bundler": "metro",

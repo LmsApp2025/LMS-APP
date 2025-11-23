@@ -1,68 +1,40 @@
-# ---- Stage 1: Build the Admin Panel (Next.js) ----
+# ---- Dependencies ----
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json turbo.json ./
+COPY apps/admin/package.json ./apps/admin/
+COPY apps/server/package.json ./apps/server/
+COPY apps/mobile/package.json ./apps/mobile/
+COPY packages/*/package.json ./packages/*/
+RUN npm ci
+
+# ---- Build Admin (Next.js Standalone) ----
 FROM node:20-alpine AS admin-builder
 WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx turbo build --filter=admin
 
-# Copy all package.json files to leverage Docker layer caching
-COPY package*.json ./
-COPY packages/admin/package*.json ./packages/admin/
-COPY packages/server/package*.json ./packages/server/
-
-# Install dependencies ONLY for the admin workspace
-RUN npm install --workspace=admin
-
-# Copy the admin source code and build it
-COPY packages/admin ./packages/admin/
-
-# Provide a placeholder for the build-time environment variable
-ENV NEXT_PUBLIC_SOCKET_SERVER_URI=""
-
-RUN npm run build --workspace=admin
-
-
-
-# ---- Stage 2: Build the Server (TypeScript) ----
+# ---- Build Server ----
 FROM node:20-alpine AS server-builder
 WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx turbo build --filter=server
 
-# Copy all package.json files again
-COPY package*.json ./
-COPY packages/admin/package*.json ./packages/admin/
-COPY packages/server/package*.json ./packages/server/
-
-# Install dependencies ONLY for the server workspace
-RUN npm install --workspace=server
-
-# Copy the server source code and build it
-COPY packages/server ./packages/server/
-RUN npm run build --workspace=server
-
-
-# ---- Stage 3: Final Production Image ----
+# ---- Final Image ----
 FROM node:20-alpine AS production
 WORKDIR /app
 
-# Copy all package.json files
-COPY package*.json ./
-COPY packages/admin/package*.json ./packages/admin/
-COPY packages/server/package*.json ./packages/server/
+# Copy only production deps
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=admin-builder /app/apps/admin/.next/standalone ./
+COPY --from=admin-builder /app/apps/admin/.next/static ./apps/admin/.next/static
+COPY --from=admin-builder /app/apps/admin/public ./apps/admin/public
 
-# Install ALL production dependencies for both workspaces
-RUN npm install --omit=dev
-
-# Copy the built admin panel from the admin-builder stage
-COPY --from=admin-builder /app/packages/admin/.next ./packages/admin/.next
-COPY --from=admin-builder /app/packages/admin/public ./packages/admin/public
-COPY --from=admin-builder /app/packages/admin/next.config.js ./packages/admin/next.config.js 
-COPY --from=admin-builder /app/packages/admin/package.json ./packages/admin/package.json
-
-# Copy the built server code and assets from the server-builder stage
-COPY --from=server-builder /app/packages/server/build ./build
-COPY --from=server-builder /app/packages/server/mails ./mails
-
-# Add this line for debugging
-RUN ls -laR /app
+# Copy server build
+COPY --from=server-builder /app/apps/server/build ./apps/server/build
+COPY --from=server-builder /app/apps/server/mails ./apps/server/mails
 
 EXPOSE 8000
-
-# This now correctly points to the unified server entry point
-CMD ["node", "build/server.js"]
+CMD ["node", "apps/server/build/server.js"]
