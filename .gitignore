@@ -86,4 +86,8 @@ apps/mobile/*.keystore
 .minio/
 coverage/
 temp/
-tmp/
+tmp/.turbo/
+.turbo/
+.turbo/
+
+.turbo/

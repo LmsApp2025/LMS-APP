@@ -1,19 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',                 // ← CRITICAL
+  output: 'standalone',                         // ← THIS IS THE KEY
   experimental: {
-    // This makes .next/standalone work in monorepos
-    outputFileTracingRoot: __dirname + '/../../',
+    // Critical for monorepos – tells Next.js where the project root is
+    outputFileTracingRoot: undefined,
   },
-  // Optional: if you use images from R2
+  // Allow images from your R2 buckets
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
-  },
+      { protocol: 'https', hostname: '**' }
+    ]
+  }
 };
 
 module.exports = nextConfig;
