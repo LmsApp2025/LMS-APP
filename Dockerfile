@@ -2,16 +2,19 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copy only package files first
+# Copy only package files
 COPY package.json package-lock.json turbo.json ./
 
-# Install ALL dependencies including devDependencies (next, typescript, turbo)
+# Install ALL deps including devDependencies
 RUN npm ci --include=dev
+
+# Install next & typescript globally in the container so they are ALWAYS found
+RUN npm install -g next typescript
 
 # Copy source code
 COPY . .
 
-# Build both apps — now next and tsc are available
+# Build — now next and tsc are guaranteed to exist
 RUN npx turbo build --filter=admin --filter=server
 
 # ---- Production Stage ----
