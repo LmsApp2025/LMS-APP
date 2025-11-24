@@ -2,18 +2,14 @@
 const nextConfig = {
   output: "standalone",
   
-  // THIS IS THE ONLY COMBINATION THAT WORKS ON RAILWAY + TURBOREPO
-  experimental: {
-    outputFileTracing: true,
-    // This forces Next.js to include everything needed for standalone in monorepos
-  },
-
-  // Critical: copy all required files
+  // distDir is critical for your Dockerfile COPY commands
   distDir: ".next",
 
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
+  
+  // Remove the 'experimental' block containing outputFileTracing
 };
 
 module.exports = nextConfig;
