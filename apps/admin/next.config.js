@@ -1,16 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',                         // ← THIS IS THE KEY
+  output: "standalone",
+  // THIS LINE IS THE MAGIC THAT FIXES RAILWAY
   experimental: {
-    // Critical for monorepos – tells Next.js where the project root is
-    outputFileTracingRoot: undefined,
+    outputFileTracingRoot: undefined,   // ← removes monorepo root restriction
+    outputFileTracingExcludes: {},     // ← forces all files to be included
   },
-  // Allow images from your R2 buckets
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: '**' }
-    ]
-  }
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
+  },
 };
 
 module.exports = nextConfig;
