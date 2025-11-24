@@ -1,0 +1,9 @@
+# Ignore the parent packages directory
+../packages
+
+# Ignore other root-level files if they exist
+../.gitignore
+../package.json
+../package-lock.json
+../README.md
+../Dockerfile
