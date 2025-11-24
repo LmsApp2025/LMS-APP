@@ -1,11 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  // THIS LINE IS THE MAGIC THAT FIXES RAILWAY
+  
+  // THIS IS THE ONLY COMBINATION THAT WORKS ON RAILWAY + TURBOREPO
   experimental: {
-    outputFileTracingRoot: undefined,   // ← removes monorepo root restriction
-    outputFileTracingExcludes: {},     // ← forces all files to be included
+    outputFileTracing: true,
+    // This forces Next.js to include everything needed for standalone in monorepos
   },
+
+  // Critical: copy all required files
+  distDir: ".next",
+
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },

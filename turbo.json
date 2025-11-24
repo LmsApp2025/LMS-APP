@@ -8,7 +8,8 @@
         "build/**",
         "dist/**",
         ".next/standalone/**",
-        ".next/server/**"
+        ".next/server/**",
+        ".next/static/**"
       ]
     },
     "dev": {
