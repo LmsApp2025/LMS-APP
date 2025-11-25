@@ -417,9 +417,19 @@ export const getStudentInfo = CatchAsyncError(
 export const updateAccessToken = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const refresh_token = req.cookies.refresh_token || (Array.isArray(req.headers['refresh-token']) 
-                                ? req.headers['refresh-token'][0] 
-                                : req.headers['refresh-token']);
+      // 1. Try grabbing from Cookies (Web Admin)
+      let refresh_token = req.cookies.refresh_token;
+
+      // 2. If not in cookies, try Headers (Mobile App)
+      if (!refresh_token) {
+        const headerToken = req.headers['refresh-token'];
+        if (Array.isArray(headerToken)) {
+            refresh_token = headerToken[0];
+        } else {
+            refresh_token = headerToken;
+        }
+      }
+
       if (!refresh_token) {
         return next(new ErrorHandler("Please login to access this resource", 400));
       }
