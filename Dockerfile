@@ -11,7 +11,7 @@ COPY apps/admin/package.json ./apps/admin/package.json
 COPY apps/server/package.json ./apps/server/package.json
 # We copy mobile too to satisfy the workspace lockfile integrity, 
 # even if we aren't building it.
-COPY apps/mobile/package.json ./apps/mobile/package.json 
+#COPY apps/mobile/package.json ./apps/mobile/package.json 
 
 # 3. Install ALL deps including devDependencies
 # Now npm sees the sub-packages and installs 'express', 'types', etc.
@@ -37,6 +37,7 @@ COPY --from=builder /app/apps/admin/public ./apps/admin/public
 
 # Copy Server build
 COPY --from=builder /app/apps/server/build ./apps/server/build
+COPY --from=builder /app/apps/server/src/mails ./apps/server/mails
 # Copy Server package.json and node_modules for runtime dependencies
 COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
 # NOTE: In a robust setup, you might want to prune devDependencies here, 
