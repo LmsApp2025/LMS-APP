@@ -447,22 +447,19 @@ export const updateAccessToken = CatchAsyncError(
       }
 
       // Find the user based on the role stored in the token
-      let user;
-      if (decoded.role === 'admin') {
-          user = await AdminModel.findById(decoded.id);
-      } else {
-          user = await StudentModel.findById(decoded.id).populate("courses");
-      }
+      const user = await StudentModel.findById(decoded.id).populate("courses");
 
+      // Fallback for Admin if Student not found
       if (!user) {
-        return next(new ErrorHandler("User not found, please login again.", 400));
+         const admin = await AdminModel.findById(decoded.id);
+         if(!admin) return next(new ErrorHandler("User not found, please login again.", 400));
+         sendToken(admin, 200, res);
+      } else {
+         sendToken(user, 200, res);
       }
-
-      // The user is valid. Now, simply call sendToken to generate new tokens
-      // and correctly update the Redis session with the full user object.
-      sendToken(user, 200, res);
 
     } catch (error: any) {
+      // console.log("Refresh error:", error.message);
       return next(new ErrorHandler(error.message, 400));
     }
   }

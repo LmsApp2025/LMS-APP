@@ -44,6 +44,8 @@ try {
 app.use(cors({
     origin: allowedOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'access-token', 'refresh-token'], // Explicitly allow your custom headers
 }));
 
 // 4. Rate Limiter (comes after CORS and parsers)
