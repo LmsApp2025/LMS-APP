@@ -417,19 +417,10 @@ export const getStudentInfo = CatchAsyncError(
 export const updateAccessToken = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // 1. Try grabbing from Cookies (Web Admin)
-      let refresh_token = req.cookies.refresh_token;
+      // 1. Try grabbing from Cookies (Web) or Headers (Mobile)
+      const refresh_token = req.cookies.refresh_token || req.headers['refresh-token'];
 
       // 2. If not in cookies, try Headers (Mobile App)
-      if (!refresh_token) {
-        const headerToken = req.headers['refresh-token'];
-        if (Array.isArray(headerToken)) {
-            refresh_token = headerToken[0];
-        } else {
-            refresh_token = headerToken;
-        }
-      }
-
       if (!refresh_token) {
         return next(new ErrorHandler("Please login to access this resource", 400));
       }
@@ -446,20 +437,32 @@ export const updateAccessToken = CatchAsyncError(
         return next(new ErrorHandler("Session expired, please login again.", 400));
       }
 
-      // Find the user based on the role stored in the token
-      const user = await StudentModel.findById(decoded.id).populate("courses");
-
-      // Fallback for Admin if Student not found
-      if (!user) {
-         const admin = await AdminModel.findById(decoded.id);
-         if(!admin) return next(new ErrorHandler("User not found, please login again.", 400));
-         sendToken(admin, 200, res);
-      } else {
-         sendToken(user, 200, res);
+      // Robust User Finding Logic
+      // 1. Try based on role if available
+      let user;
+      if (decoded.role === 'admin') {
+          user = await AdminModel.findById(decoded.id);
+      } else if (decoded.role === 'student') {
+          user = await StudentModel.findById(decoded.id);
       }
 
+      // 2. Fallback: If role wasn't clear or user not found, try both collections
+      if (!user) {
+          user = await StudentModel.findById(decoded.id);
+      }
+      if (!user) {
+          user = await AdminModel.findById(decoded.id);
+      }
+
+      if (!user) {
+        return next(new ErrorHandler("User not found", 400));
+      }
+
+      // Generate new tokens
+      sendToken(user, 200, res);
+
     } catch (error: any) {
-      // console.log("Refresh error:", error.message);
+      // console.log("Refresh Error:", error.message); 
       return next(new ErrorHandler(error.message, 400));
     }
   }
