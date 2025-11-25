@@ -417,57 +417,57 @@ export const getStudentInfo = CatchAsyncError(
 export const updateAccessToken = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // 1. Try grabbing from Cookies (Web) or Headers (Mobile)
-      const refresh_token = req.cookies.refresh_token || req.headers['refresh-token'];
+      // console.log("Refresh request received");
+      
+      // 1. Try Cookies (Admin) or Headers (Mobile)
+      let refresh_token = req.cookies.refresh_token || req.headers['refresh-token'];
 
-      // 2. If not in cookies, try Headers (Mobile App)
+      // Handle array headers (rare edge case)
+      if (Array.isArray(refresh_token)) {
+          refresh_token = refresh_token[0];
+      }
+
       if (!refresh_token) {
+        // console.log("Refresh failed: Token missing from headers/cookies");
         return next(new ErrorHandler("Please login to access this resource", 400));
       }
 
-      const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN!) as JwtPayload;
+      // console.log("Verifying refresh token...");
+      const decoded = jwt.verify(refresh_token as string, process.env.REFRESH_TOKEN!) as JwtPayload;
 
       if (!decoded || !decoded.id) {
-        return next(new ErrorHandler("Could not refresh token, please login again.", 400));
+        // console.log("Refresh failed: Invalid token signature");
+        return next(new ErrorHandler("Could not refresh token", 400));
       }
 
+      // console.log("Checking Redis for session:", decoded.id);
       const session = await redis.get(decoded.id);
       
       if (!session) {
-        return next(new ErrorHandler("Session expired, please login again.", 400));
+        // console.log("Refresh failed: Redis session expired/missing for ID:", decoded.id);
+        return next(new ErrorHandler("Session expired, please login again", 400));
       }
 
-      // Robust User Finding Logic
-      // 1. Try based on role if available
-      let user;
-      if (decoded.role === 'admin') {
-          user = await AdminModel.findById(decoded.id);
-      } else if (decoded.role === 'student') {
-          user = await StudentModel.findById(decoded.id);
-      }
-
-      // 2. Fallback: If role wasn't clear or user not found, try both collections
-      if (!user) {
-          user = await StudentModel.findById(decoded.id);
-      }
+      // console.log("Session valid. Finding user...");
+      let user = await StudentModel.findById(decoded.id);
       if (!user) {
           user = await AdminModel.findById(decoded.id);
       }
 
       if (!user) {
+        // console.log("Refresh failed: User not found in DB");
         return next(new ErrorHandler("User not found", 400));
       }
 
-      // Generate new tokens
+      // console.log("Refresh successful. Issuing new tokens.");
       sendToken(user, 200, res);
 
     } catch (error: any) {
-      // console.log("Refresh Error:", error.message); 
+      // console.error("Refresh Controller Error:", error.message);
       return next(new ErrorHandler(error.message, 400));
     }
   }
 );
-
 
 export const updateUserEnrollment = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
