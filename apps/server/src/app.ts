@@ -20,32 +20,47 @@ import submissionRouter from "./routes/submission.route";
 // THE DEFINITIVE MIDDLEWARE ORDER
 // ==========================================================
 
-// 1. Trust Proxy Header (from Railway/Vercel)
+
 // This must come first.
 app.set('trust proxy', 1);
 
-// 2. Core Middleware
-app.use(express.json({ limit: "50mb" }));
-
-app.use(cookieParser());
-
+// 1. Parse Allowed Origins ONCE at startup
+// This happens only when the server boots up
 let allowedOrigins: string[] = [];
 try {
     const originEnv = process.env.ORIGIN || "['http://localhost:3000']";
-    // This will safely parse the string format ['url1','url2'] into a real array
     allowedOrigins = JSON.parse(originEnv.replace(/'/g, '"'));
     console.log("CORS_ORIGIN configured for:", allowedOrigins);
 } catch (e) {
-    console.error("CRITICAL: Invalid ORIGIN environment variable format. Please use ['url1','url2'] format.", e);
-    // Fallback to a safe default if parsing fails
+    console.error("CRITICAL: Invalid ORIGIN environment variable format.", e);
     allowedOrigins = ['http://localhost:3000'];
 }
 
+// 2. Core Middleware
+app.use(express.json({ limit: "50mb" }));
+app.use(cookieParser());
+
+// 3. CORS Configuration
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'access-token', 'refresh-token'], // Explicitly allow your custom headers
+    origin: (origin, callback) => {
+        // Case 1: Mobile App or Non-Browser Request (No Origin) -> ALLOW
+        // This is what fixes your Mobile App logout issue
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        // Case 2: Admin Panel or Browser (Has Origin) -> CHECK LIST
+        // This keeps your Admin Panel secure
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.log(`Blocked by CORS: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Required for Admin Panel cookies
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'access-token', 'refresh-token'],
 }));
 
 // 4. Rate Limiter (comes after CORS and parsers)
