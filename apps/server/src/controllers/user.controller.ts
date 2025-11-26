@@ -417,53 +417,46 @@ export const getStudentInfo = CatchAsyncError(
 export const updateAccessToken = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // console.log("Refresh request received");
+      console.log("[REFRESH] Attempting token refresh...");
       
-      // 1. Try Cookies (Admin) or Headers (Mobile)
+   
       let refresh_token = req.cookies.refresh_token || req.headers['refresh-token'];
 
-      // Handle array headers (rare edge case)
-      if (Array.isArray(refresh_token)) {
-          refresh_token = refresh_token[0];
-      }
+      // Handle array headers
+      if (Array.isArray(refresh_token)) refresh_token = refresh_token[0];
 
       if (!refresh_token) {
-        // console.log("Refresh failed: Token missing from headers/cookies");
+        console.log("[REFRESH FAILED] No token found in cookies or headers.");
         return next(new ErrorHandler("Please login to access this resource", 400));
       }
 
-      // console.log("Verifying refresh token...");
       const decoded = jwt.verify(refresh_token as string, process.env.REFRESH_TOKEN!) as JwtPayload;
 
       if (!decoded || !decoded.id) {
-        // console.log("Refresh failed: Invalid token signature");
+        console.log("Refresh failed: Invalid token signature");
         return next(new ErrorHandler("Could not refresh token", 400));
       }
 
-      // console.log("Checking Redis for session:", decoded.id);
       const session = await redis.get(decoded.id);
       
       if (!session) {
-        // console.log("Refresh failed: Redis session expired/missing for ID:", decoded.id);
+        console.log("Refresh failed: Redis session expired/missing for ID:", decoded.id);
         return next(new ErrorHandler("Session expired, please login again", 400));
       }
 
-      // console.log("Session valid. Finding user...");
       let user = await StudentModel.findById(decoded.id);
-      if (!user) {
-          user = await AdminModel.findById(decoded.id);
-      }
+      if (!user) user = await AdminModel.findById(decoded.id);
 
       if (!user) {
-        // console.log("Refresh failed: User not found in DB");
+        console.log("Refresh failed: User not found in DB");
         return next(new ErrorHandler("User not found", 400));
       }
 
-      // console.log("Refresh successful. Issuing new tokens.");
+      console.log(`[REFRESH SUCCESS] Refreshing token for user: ${user._id}`);
       sendToken(user, 200, res);
 
     } catch (error: any) {
-      // console.error("Refresh Controller Error:", error.message);
+      console.log(`[REFRESH ERROR] ${error.message}`);
       return next(new ErrorHandler(error.message, 400));
     }
   }

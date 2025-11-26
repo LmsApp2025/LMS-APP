@@ -21,11 +21,21 @@ import submissionRouter from "./routes/submission.route";
 // ==========================================================
 
 
-// This must come first.
+// 1. Trust Proxy (Railway)
 app.set('trust proxy', 1);
 
-// 1. Parse Allowed Origins ONCE at startup
-// This happens only when the server boots up
+// 2. Logging Middleware (Debugs your issue)
+app.use((req, res, next) => {
+    console.log(`[REQUEST] ${req.method} ${req.url} | Origin: ${req.headers.origin || 'No Origin'}`);
+    next();
+});
+
+// 3. Core Middleware
+app.use(express.json({ limit: "50mb" }));
+app.use(cookieParser());
+
+// 4. CORS Configuration (CRITICAL FIX)
+// We parse the allowed origins once
 let allowedOrigins: string[] = [];
 try {
     const originEnv = process.env.ORIGIN || "['http://localhost:3000']";
@@ -36,21 +46,13 @@ try {
     allowedOrigins = ['http://localhost:3000'];
 }
 
-// 2. Core Middleware
-app.use(express.json({ limit: "50mb" }));
-app.use(cookieParser());
-
-// 3. CORS Configuration
 app.use(cors({
     origin: (origin, callback) => {
-        // Case 1: Mobile App or Non-Browser Request (No Origin) -> ALLOW
-        // This is what fixes your Mobile App logout issue
+        // Mobile Apps (No Origin) -> ALLOW
         if (!origin) {
             return callback(null, true);
         }
-
-        // Case 2: Admin Panel or Browser (Has Origin) -> CHECK LIST
-        // This keeps your Admin Panel secure
+        // Web Apps (Has Origin) -> CHECK LIST
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
