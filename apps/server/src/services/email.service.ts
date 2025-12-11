@@ -36,5 +36,3 @@ export const sendMail = async (options: IEmailOptions): Promise<void> => {
         throw new Error('Failed to send email.');
     }
 };
-
-export default sendMail;
