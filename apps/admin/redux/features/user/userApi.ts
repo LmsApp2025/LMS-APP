@@ -2,12 +2,10 @@ import { apiSlice } from "../api/apiSlice";
 
 export const userApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getAllAdmins: builder.query({ // Fetches from 'user' (now admin) model
+    getAllAdmins: builder.query({ 
       query: () => ({ url: "get-admins", method: "GET" }),
       providesTags: ["Users"],
     }),
-    
-    // NEW Endpoints for managing students
     getAllStudents: builder.query({
       query: () => ({ url: "admin/get-students", method: "GET" }),
       providesTags: (result) => result ? [...result.students.map(({ _id }: any) => ({ type: 'Students' as const, id: _id })), { type: 'Students', id: 'LIST' }] : [{ type: 'Students', id: 'LIST' }],
@@ -30,7 +28,6 @@ export const userApi = apiSlice.injectEndpoints({
         method: 'PUT',
         body: { userId, courseId }
       }),
-      // This should invalidate the specific student to refetch their course list
       invalidatesTags: [{ type: 'Students', id: 'LIST' }, { type: 'Courses', id: 'LIST' }],
     }),
   }),

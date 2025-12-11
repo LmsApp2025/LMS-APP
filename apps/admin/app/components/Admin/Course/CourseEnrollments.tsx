@@ -1,12 +1,9 @@
-// C:\LMS App copy Part 2\Lms-App - Copy\admin\app\components\Admin\Course\CourseEnrollments.tsx
-
 "use client";
 import React, { FC, useEffect, useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Box, Button } from "@mui/material";
 import { useTheme } from "next-themes";
 import { useGetAllCoursesQuery } from "@/redux/features/courses/coursesApi";
-// MODIFICATION: Import the correct hooks
 import { useGetAllStudentsQuery, useUpdateStudentEnrollmentMutation } from "@/redux/features/user/userApi";
 import Loader from "../../Loader/Loader";
 import { styles } from "@/app/styles/style";
@@ -19,7 +16,6 @@ type Props = {
 const CourseEnrollments: FC<Props> = ({ courseId }) => {
   const { theme } = useTheme();
   const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({});
-  // MODIFICATION: Use the correct hook to fetch students
   const { data: studentsData, isLoading: studentsLoading, refetch } = useGetAllStudentsQuery({});
   const [updateUserEnrollment, { isSuccess, error }] = useUpdateStudentEnrollmentMutation();
 
@@ -48,15 +44,13 @@ const CourseEnrollments: FC<Props> = ({ courseId }) => {
   useEffect(() => {
     if (isSuccess) {
       toast.success("User enrollment updated successfully.");
-      refetch(); // Refetch the student list to get updated course arrays
+      refetch(); 
     }
     if (error) {
-      // Add a check to ensure 'error' is an object and has a 'data' property
       if (typeof error === 'object' && error !== null && 'data' in error) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
       } else {
-        // Fallback for unexpected error types
         toast.error("An unexpected error occurred");
       }
     }

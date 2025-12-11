@@ -1,5 +1,3 @@
-// C:\LMS App copy Part 2\Lms-App - Copy\admin\app\components\Admin\Course\CreateCourse.tsx
-
 "use client";
 import React, { useEffect, useState } from "react";
 import CourseInformation from "./CourseInformation";

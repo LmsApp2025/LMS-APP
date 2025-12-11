@@ -1,11 +1,10 @@
-// In packages/server/utils/jwt.ts
+// In: apps/server/src/utils/jwt.ts (CORRECTED AND FINAL)
 
 require("dotenv").config();
 import { Response } from "express";
-import { IUser } from "../models/admin.model"; // For Admins
-import { IStudent } from "../models/student.model"; // For Students
+import { IUser } from "../models/user.model";
 import { redis } from "./redis";
-import jwt from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
 
 interface ITokenOptions {
     expires: Date;
@@ -16,7 +15,7 @@ interface ITokenOptions {
     path?: string;
 }
 
-// Set defaults: access token for 15 minutes, refresh token for 30 days
+// Set defaults
 const accessTokenExpire = parseInt(process.env.ACCESS_TOKEN_EXPIRE || "15", 10);
 const refreshTokenExpire = parseInt(process.env.REFRESH_TOKEN_EXPIRE || "30", 10);
 
@@ -38,18 +37,14 @@ export const refreshTokenOptions: ITokenOptions = {
     path: "/",
 };
 
-// A single, robust function to send tokens for ANY user type
-export const sendToken = (user: IUser | IStudent, statusCode: number, res: Response) => {
-    const userRole = 'role' in user ? user.role : 'student'; // Differentiate between admin and student
-    
-    const accessToken = jwt.sign({ id: user._id, role: userRole }, process.env.ACCESS_TOKEN!, { expiresIn: `${accessTokenExpire}m` });
-    const refreshToken = jwt.sign({ id: user._id, role: userRole }, process.env.REFRESH_TOKEN!, { expiresIn: `${refreshTokenExpire}d` });
+// A single function to send tokens for ANY user type
+export const sendToken = (user: IUser, statusCode: number, res: Response) => {
+    const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.ACCESS_TOKEN!, { expiresIn: `${accessTokenExpire}m` });
+    const refreshToken = jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_TOKEN!, { expiresIn: `${refreshTokenExpire}d` });
 
     // Save session to Redis
-    const sessionDurationInSeconds = refreshTokenExpire * 24 * 60 * 60;
-    redis.set(user._id.toString(), JSON.stringify({ "session": "valid" }), "EX", sessionDurationInSeconds);
+    redis.set(user._id.toString(), JSON.stringify(user), "EX", refreshTokenExpire * 24 * 60 * 60);
 
-    // Set cookies
     res.cookie("access_token", accessToken, accessTokenOptions);
     res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
@@ -57,6 +52,12 @@ export const sendToken = (user: IUser | IStudent, statusCode: number, res: Respo
         success: true,
         user,
         accessToken,
-        refreshToken,
     });
+};
+
+// FIXED: Moved this utility function to its correct home.
+export const createActivationToken = (user: any): { token: string; activationCode: string } => {
+  const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
+  const token = jwt.sign({ user, activationCode }, process.env.ACTIVATION_SECRET as Secret, { expiresIn: "5m" });
+  return { token, activationCode };
 };

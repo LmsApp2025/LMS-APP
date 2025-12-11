@@ -1,5 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
-import { IUser } from "./admin.model";
+import { IUser } from "./user.model"; // CORRECTED: Imports unified IUser
 import { ICourse } from "./course.model";
 
 // Interface for a single answer provided by the user
@@ -28,7 +28,7 @@ const quizSubmissionSchema = new Schema<IQuizSubmission>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Student",
+      ref: "User",
       required: true,
     },
     courseId: {

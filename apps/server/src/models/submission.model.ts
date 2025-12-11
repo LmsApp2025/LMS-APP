@@ -1,8 +1,6 @@
-// C:\Lms-App - Copy\server\models\submission.model.ts
-
 import mongoose, { Document, Model, Schema } from "mongoose";
 import { ICourse } from "./course.model";
-import { IUser } from "./admin.model";
+import { IUser } from "./user.model"; // CORRECTED: Imports unified IUser
 
 // Interface for the content submitted by the user
 export interface ISubmittedContent {
@@ -28,7 +26,7 @@ const submissionSchema = new Schema<ISubmission>(
   {
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
     assignmentId: { type: mongoose.Schema.Types.ObjectId, required: true },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     content: {
       format: { type: String, enum: ["link", "file"], required: true },
       url: String,

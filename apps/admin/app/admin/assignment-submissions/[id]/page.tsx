@@ -1,35 +1,16 @@
-'use client'
-import React from 'react'
-import AdminSidebar from "../../../components/Admin/sidebar/AdminSidebar";
-import Heading from '../../../utils/Heading';
-import DashboardHeader from '../../../components/Admin/DashboardHeader';
+'use client';
+import React from 'react';
+import AdminLayout from '../../../components/Admin/AdminLayout';
 import AssignmentSubmissions from '../../../components/Admin/Submissions/AssignmentSubmissions';
 
-type Props = { 
-    params: { id: string } // More specific type for params
-}
+type Props = { params: { id: string } };
 
-const page = ({params}:any) => {
-    const id = params?.id;
+const Page = ({ params }: Props) => {
+    return (
+        <AdminLayout pageTitle="Assignment Submissions">
+            <AssignmentSubmissions courseId={params.id} />
+        </AdminLayout>
+    );
+};
 
-  return (
-    <div>
-        <Heading
-         title="Elearning - Assignment Submissions"
-         description="View student assignment submissions"
-         keywords="Assignments, Submissions, Grading"
-        />
-        <div className="flex">
-            <div className="1500px:w-[16%] w-1/5">
-                <AdminSidebar />
-            </div>
-            <div className="w-[85%]">
-               <DashboardHeader />
-               <AssignmentSubmissions courseId={id} />
-            </div>
-        </div>
-    </div>
-  )
-}
-
-export default page;
+export default Page;

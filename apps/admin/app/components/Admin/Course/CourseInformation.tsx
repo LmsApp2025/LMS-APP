@@ -1,5 +1,3 @@
-// C:\Lms-App - Copy\admin\app\components\Admin\Course\CourseInformation.tsx
-
 import { styles } from "@/app/styles/style";
 import React, { FC, useState, useEffect } from "react";
 

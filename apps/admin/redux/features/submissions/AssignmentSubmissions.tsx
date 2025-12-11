@@ -1,10 +1,7 @@
-// C:\LMS App copy Part 2\Lms-App - Copy\admin\app\components\Admin\Submissions\AssignmentSubmissions.tsx
-
 "use client";
 import React, { FC, useEffect, useState, useMemo } from "react";
 import { useGetAssignmentSubmissionsQuery } from "@/redux/features/submissions/submissionsApi";
 import { useGetAllCoursesQuery } from "@/redux/features/courses/coursesApi";
-//import Loader from "../../Loader/Loader";
 import { styles } from "@/app/styles/style";
 import { Box, Link } from "@mui/material";
 
@@ -12,7 +9,6 @@ type Props = {
   courseId: string;
 };
 
-// Group submissions by user, then by course
 const groupSubmissions = (submissions: any[], courses: any[]) => {
   if (!submissions || !courses) return {};
 
@@ -35,8 +31,6 @@ const groupSubmissions = (submissions: any[], courses: any[]) => {
         finalAssignments: [],
       };
     }
-    
-    // Find the assignment title
     let assignmentTitle = "Unknown Assignment";
     let isFinal = true;
 
@@ -80,11 +74,6 @@ const AssignmentSubmissions: FC<Props> = ({ courseId }) => {
       }
       return {};
   }, [data, coursesData]);
-
-
-//   if (isLoading || coursesLoading) {
-//     return <Loader />;
-//   }
 
   return (
     <div className="mt-[120px] p-5">

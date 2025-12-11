@@ -1,5 +1,3 @@
-// C:\LMS App copy Part 2\Lms-App - Copy\admin\app\components\Admin\Order\AllInvoices.tsx
-
 import React, { useEffect, useState } from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
@@ -8,7 +6,6 @@ import { useGetAllCoursesQuery } from "@/redux/features/courses/coursesApi";
 import Loader from "../../Loader/Loader";
 import { format } from "timeago.js";
 import { useGetAllOrdersQuery } from "@/redux/features/orders/ordersApi";
-// MODIFICATION: Import the correct hook
 import { useGetAllAdminsQuery } from "@/redux/features/user/userApi";
 import { AiOutlineMail } from "react-icons/ai";
 
@@ -28,7 +25,6 @@ const AllInvoices = ({ isDashboard }: Props) => {
   useEffect(() => {
     if (data && usersData && coursesData) {
       const temp = data.orders.map((item: any) => {
-        // Find the user/admin who created the order
         const user = usersData?.users.find(
           (user: any) => user._id === item.userId
         );

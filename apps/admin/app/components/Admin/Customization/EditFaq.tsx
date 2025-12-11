@@ -1,193 +1,65 @@
+"use client";
+import React, { useState } from "react";
+import Loader from "../../Loader/Loader";
 import { styles } from "@/app/styles/style";
-import {
-  useEditLayoutMutation,
-  useGetHeroDataQuery,
-} from "@/redux/features/layout/layoutApi";
-import React, { useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
 import { AiOutlineDelete } from "react-icons/ai";
 import { HiMinus, HiPlus } from "react-icons/hi";
 import { IoMdAddCircleOutline } from "react-icons/io";
-import Loader from "../../Loader/Loader";
+import { useLayout } from "@/app/hooks/useLayout";
+import { Box, Button, TextField, IconButton, Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 
-type Props = {};
+const EditFaq = () => {
+  const { isLoading, currentState, setCurrentState, isUnchanged, handleSave } = useLayout('FAQ');
+  const [expanded, setExpanded] = useState<string | false>(false);
 
-const EditFaq = (props: Props) => {
-  const { data, isLoading } = useGetHeroDataQuery("FAQ", {
-    refetchOnMountOrArgChange: true,
-  });
-  const [editLayout, { isSuccess:layoutSuccess, error }] = useEditLayoutMutation();
-
-  const [questions, setQuestions] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (data) {
-      setQuestions(data.layout.faq);
-    }
-    if(layoutSuccess){
-        toast.success("FAQ updated successfully");
-    }
-
-    if(error){
-        // Add a check to ensure 'error' is an object and has a 'data' property
-      if (typeof error === 'object' && error !== null && 'data' in error) {
-        const errorMessage = error as any;
-        toast.error(errorMessage.data.message);
-      } else {
-        // Fallback for unexpected error types
-        toast.error("An unexpected error occurred");
-      }
-    }
-  }, [data,layoutSuccess,error]);
-
-  const toggleQuestion = (id: any) => {
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((q) => (q._id === id ? { ...q, active: !q.active } : q))
-    );
+  const handleExpansion = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpanded(isExpanded ? panel : false);
   };
 
-  const handleQuestionChange = (id: any, value: string) => {
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((q) => (q._id === id ? { ...q, question: value } : q))
-    );
-  };
-
-  const handleAnswerChange = (id: any, value: string) => {
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((q) => (q._id === id ? { ...q, answer: value } : q))
-    );
-  };
-
-  const newFaqHandler = () => {
-    setQuestions([
-      ...questions,
-      {
-        question: "",
-        answer: "",
-      },
-    ]);
-  };
-
-  // Function to check if the FAQ arrays are unchanged
-  const areQuestionsUnchanged = (
-    originalQuestions: any[],
-    newQuestions: any[]
-  ) => {
-    return JSON.stringify(originalQuestions) === JSON.stringify(newQuestions);
-  };
-
-  const isAnyQuestionEmpty = (questions: any[]) => {
-    return questions.some((q) => q.question === "" || q.answer === "");
-  };
-
-  const handleEdit = async () => {
-    if (
-      !areQuestionsUnchanged(data.layout.faq, questions) &&
-      !isAnyQuestionEmpty(questions)
-    ) {
-      await editLayout({
-        type: "FAQ",
-        faq: questions,
-      });
+  const handleFaqChange = (index: number, field: 'question' | 'answer', value: string) => {
+    if (setCurrentState) {
+      const updatedFaq = [...currentState];
+      updatedFaq[index][field] = value;
+      setCurrentState(updatedFaq);
     }
   };
+
+  const addFaq = () => {
+    if (setCurrentState) {
+      setCurrentState([...currentState, { question: "", answer: "" }]);
+    }
+  };
+  
+  const removeFaq = (index: number) => {
+    if (setCurrentState) {
+      const updatedFaq = [...currentState];
+      updatedFaq.splice(index, 1);
+      setCurrentState(updatedFaq);
+    }
+  };
+
+  const isAnyFieldEmpty = currentState?.some((faq: any) => faq.question === "" || faq.answer === "");
+  const canSave = !isUnchanged && !isAnyFieldEmpty;
+
+  if (isLoading || !currentState) return <Loader />;
 
   return (
-   <>
-   {
-    isLoading ? (
-        <Loader />
-    ) : (
-        <div className="w-[90%] 800px:w-[80%] m-auto mt-[120px]">
-        <div className="mt-12">
-          <dl className="space-y-8">
-            {questions.map((q: any) => (
-              <div
-                key={q._id}
-                className={`${
-                  q._id !== questions[0]?._id && "border-t"
-                } border-gray-200 pt-6`}
-              >
-                <dt className="text-lg">
-                  <button
-                    className="flex items-start dark:text-white text-black justify-between w-full text-left focus:outline-none"
-                    onClick={() => toggleQuestion(q._id)}
-                  >
-                    <input
-                      className={`${styles.input} border-none`}
-                      value={q.question}
-                      onChange={(e: any) =>
-                        handleQuestionChange(q._id, e.target.value)
-                      }
-                      placeholder={"Add your question..."}
-                    />
-  
-                    <span className="ml-6 flex-shrink-0">
-                      {q.active ? (
-                        <HiMinus className="h-6 w-6" />
-                      ) : (
-                        <HiPlus className="h-6 w-6" />
-                      )}
-                    </span>
-                  </button>
-                </dt>
-                {q.active && (
-                  <dd className="mt-2 pr-12">
-                    <input
-                      className={`${styles.input} border-none`}
-                      value={q.answer}
-                      onChange={(e: any) =>
-                        handleAnswerChange(q._id, e.target.value)
-                      }
-                      placeholder={"Add your answer..."}
-                    />
-                    <span className="ml-6 flex-shrink-0">
-                      <AiOutlineDelete
-                        className="dark:text-white text-black text-[18px] cursor-pointer"
-                        onClick={() => {
-                          setQuestions((prevQuestions) =>
-                            prevQuestions.filter((item) => item._id !== q._id)
-                          );
-                        }}
-                      />
-                    </span>
-                  </dd>
-                )}
-              </div>
-            ))}
-          </dl>
-          <br />
-          <br />
-          <IoMdAddCircleOutline
-            className="dark:text-white text-black text-[25px] cursor-pointer"
-            onClick={newFaqHandler}
-          />
-        </div>
-  
-        <div
-          className={`${
-            styles.button
-          } !w-[100px] !min-h-[40px] !h-[40px] dark:text-white text-black bg-[#cccccc34] 
-              ${
-                areQuestionsUnchanged(data.layout.faq, questions) ||
-                isAnyQuestionEmpty(questions)
-                  ? "!cursor-not-allowed"
-                  : "!cursor-pointer !bg-[#42d383]"
-              }
-              !rounded fixed bottom-12 right-12`}
-          onClick={
-            areQuestionsUnchanged(data.layout.faq, questions) ||
-            isAnyQuestionEmpty(questions)
-              ? () => null
-              : handleEdit
-          }
-        >
-          Save
-        </div>
-      </div>
-    )
-   }
-   </>
+    <Box sx={{ width: '90%', m: 'auto', mt: '120px', position: 'relative', pb: '80px' }}>
+      <h1 className={`${styles.title}`}>Edit FAQ</h1>
+      {currentState.map((item: any, index: number) => (
+        <Accordion key={index} expanded={expanded === `panel${index}`} onChange={handleExpansion(`panel${index}`)}>
+          <AccordionSummary expandIcon={<HiPlus />} sx={{width: '100%'}}>
+            <TextField variant="standard" value={item.question} onChange={(e) => handleFaqChange(index, 'question', e.target.value)} fullWidth placeholder="Add your question..."/>
+            <IconButton onClick={() => removeFaq(index)}><AiOutlineDelete /></IconButton>
+          </AccordionSummary>
+          <AccordionDetails>
+            <TextField variant="outlined" value={item.answer} onChange={(e) => handleFaqChange(index, 'answer', e.target.value)} fullWidth multiline rows={4} placeholder="Add your answer..."/>
+          </AccordionDetails>
+        </Accordion>
+      ))}
+      <IconButton onClick={addFaq} sx={{ mt: 2 }}><IoMdAddCircleOutline size={30} /></IconButton>
+      <Button variant="contained" onClick={handleSave} disabled={!canSave} sx={{ position: 'absolute', bottom: 20, right: 20, backgroundColor: canSave ? '#42d383' : 'grey.500' }}>Save</Button>
+    </Box>
   );
 };
 

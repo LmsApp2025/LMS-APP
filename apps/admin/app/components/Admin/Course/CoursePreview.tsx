@@ -1,7 +1,4 @@
-// C:\Lms-App - Copy\admin\app\components\Admin\Course\CoursePreview.tsx
-
 import React, { FC } from "react";
-import CoursePlayer from "../../../utils/CoursePlayer"; // This will need a dummy video URL for preview
 import { styles } from "../../../styles/style";
 
 type Props = {
@@ -43,7 +40,6 @@ const CoursePreview: FC<Props> = ({
         <h3 className="text-[20px] font-Poppins font-[500] dark:text-white text-black">Course Content Structure</h3>
         <br />
 
-        {/* Render the new hierarchical content */}
         {courseData?.modules?.map((module: any, moduleIndex: number) => (
             <div key={moduleIndex} className="mb-4 p-3 border rounded">
                 <h4 className="text-lg font-bold">{module.title || `Module ${moduleIndex + 1}`}</h4>
@@ -64,7 +60,6 @@ const CoursePreview: FC<Props> = ({
       <br />
       <br />
 
-      {/* Navigation Buttons */}
       <div className="w-full flex items-center justify-between">
         <div
           className="w-full 800px:w-[180px] flex items-center justify-center h-[40px] bg-gray-500 text-center text-[#fff] rounded mt-8 cursor-pointer"

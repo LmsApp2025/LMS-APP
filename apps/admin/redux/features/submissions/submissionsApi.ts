@@ -1,5 +1,3 @@
-// C:\LMS App copy Part 2\Lms-App - Copy\admin\redux\features\submissions\submissionsApi.ts
-
 import { apiSlice } from "../api/apiSlice";
 
 export const submissionsApi = apiSlice.injectEndpoints({
@@ -10,7 +8,6 @@ export const submissionsApi = apiSlice.injectEndpoints({
                 method: 'GET',
                 credentials: 'include' as const,
             }),
-            // MODIFICATION: Use a more specific, result-based tagging system
             providesTags: (result) =>
                 result?.submissions
                     ? [
@@ -25,17 +22,15 @@ export const submissionsApi = apiSlice.injectEndpoints({
                 method: 'DELETE',
                 credentials: 'include' as const,
             }),
-            // MODIFICATION: Invalidate the generic LIST tag to force a refetch
             invalidatesTags: [{ type: 'AssignmentSubmissions', id: 'LIST' }],
         }),
         gradeAssignmentSubmission: builder.mutation({
-            query: ({ submissionId, grade, feedback, status }) => ({ // Added status
+            query: ({ submissionId, grade, feedback, status }) => ({ 
                 url: `grade-assignment/${submissionId}`,
                 method: 'PUT',
-                body: { grade, feedback, status }, // Added status
+                body: { grade, feedback, status }, 
                 credentials: 'include' as const,
             }),
-            // MODIFICATION: Invalidate the specific submission tag that was updated
             invalidatesTags: (result, error, { submissionId }) => [{ type: 'AssignmentSubmissions', id: submissionId }],
         }),
         getQuizSubmissions: builder.query({

@@ -1,9 +1,14 @@
-// C:\LMS App copy Part 2\Lms-App - Copy\server\utils\r2.helper.ts
+// In: apps/server/src/services/file.service.ts (NEW FILE)
 
 import mime from "mime-types";
-import { minioClient } from "./minioClient";
+import { minioClient } from "../utils/minioClient"; // minioClient is a true utility
 
-export const getR2PublicDomain = (bucketName: string): string => {
+interface IUploadResult {
+    public_id: string; // This is the objectName
+    url: string;       // This is the public URL
+}
+
+const getR2PublicDomain = (bucketName: string): string => {
     switch (bucketName) {
         case 'marstech-lms-avatars-2025':
             return process.env.R2_AVATARS_DOMAIN!;
@@ -18,9 +23,11 @@ export const getR2PublicDomain = (bucketName: string): string => {
     }
 };
 
-export const uploadBase64ToR2 = async (base64String: string, bucketName: string, objectPrefix: string): Promise<{ public_id: string; url: string }> => {
+export const uploadBase64ToR2 = async (base64String: string, bucketName: string, objectPrefix: string): Promise<IUploadResult> => {
     const matches = base64String.match(/^data:(.+);base64,(.+)$/);
-    if (!matches || matches.length !== 3) throw new Error("Invalid base64 string format");
+    if (!matches || matches.length !== 3) {
+        throw new Error("Invalid base64 string format");
+    }
     
     const mimeType = matches[1];
     const base64Data = matches[2];
@@ -42,4 +49,13 @@ export const uploadBase64ToR2 = async (base64String: string, bucketName: string,
         public_id: objectName,
         url: publicUrl,
     };
+};
+
+export const removeFileFromR2 = async (bucketName: string, objectName: string): Promise<void> => {
+    try {
+        await minioClient.removeObject(bucketName, objectName);
+    } catch (error) {
+        console.error(`Error removing file from R2: ${objectName} in ${bucketName}`, error);
+        // We log the error but don't re-throw, as failing to delete an old file shouldn't block a user update.
+    }
 };

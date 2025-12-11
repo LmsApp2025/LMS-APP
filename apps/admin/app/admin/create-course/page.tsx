@@ -1,31 +1,14 @@
-'use client'
-import React from 'react'
-import AdminSidebar from "../../components/Admin/sidebar/AdminSidebar";
-import Heading from '../../utils/Heading';
+'use client';
+import React from 'react';
+import AdminLayout from '../../components/Admin/AdminLayout';
 import CreateCourse from "../../components/Admin/Course/CreateCourse";
-import DashboardHeader from '../../components/Admin/DashboardHeader';
 
-type Props = {}
-
-const page = (props: Props) => {
+const Page = () => {
   return (
-    <div>
-        <Heading
-         title="Elearning - Admin"
-         description="ELearning is a platform for students to learn and get help from teachers"
-         keywords="Prograaming,MERN,Redux,Machine Learning"
-        />
-        <div className="flex">
-            <div className="1500px:w-[16%] w-1/5">
-                <AdminSidebar />
-            </div>
-            <div className="w-[85%]">
-               <DashboardHeader />
-               <CreateCourse /> 
-            </div>
-        </div>
-    </div>
-  )
-}
+    <AdminLayout pageTitle="Create New Course">
+        <CreateCourse /> 
+    </AdminLayout>
+  );
+};
 
-export default page
+export default Page;

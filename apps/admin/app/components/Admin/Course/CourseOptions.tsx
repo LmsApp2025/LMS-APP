@@ -1,5 +1,3 @@
-// C:\Lms-App - Copy\admin\app\components\Admin\Course\CourseOptions.tsx
-
 import React, { FC } from 'react';
 import { IoMdCheckmark } from 'react-icons/io';
 
@@ -9,7 +7,6 @@ type Props = {
 }
 
 const CourseOptions: FC<Props> = ({ active, setActive }) => {
-    // Updated to reflect the new 3-step process
     const options = [
         "Course Information",
         "Course Content",

@@ -1,4 +1,3 @@
-// MODIFICATION: Add "use client" at the very top
 "use client";
 import React from "react";
 import DashboardHeader from "./DashboardHeader";
@@ -9,8 +8,6 @@ type Props = {
 };
 
 const DashboardHero = ({ isDashboard }: Props) => {
-  // This component is now correctly identified as a client component,
-  // so using state here is safe.
   return (
     <div>
       <DashboardHeader />

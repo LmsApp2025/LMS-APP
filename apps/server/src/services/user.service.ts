@@ -1,36 +1,36 @@
-import { Response } from "express";
+// In: apps/server/src/services/user.service.ts (REFACTORED)
+
 import { redis } from "../utils/redis";
-import userModel from "../models/admin.model";
+import UserModel, { UserRole } from "../models/user.model";
 
-// get user by id
-export const getUserById = async (id: string, res: Response) => {
+// Get user by ID service
+export const getUserById = async (id: string) => {
   const userJson = await redis.get(id);
-
   if (userJson) {
-    const user = JSON.parse(userJson);
-    res.status(201).json({
-      success: true,
-      user,
-    });
+    return JSON.parse(userJson);
   }
+  // Optional: Fetch from DB if not in cache
+  const user = await UserModel.findById(id);
+  if (user) {
+    await redis.set(id, JSON.stringify(user));
+  }
+  return user;
 };
 
-// Get All users
-export const getAllUsersService = async (res: Response) => {
-  const users = await userModel.find().sort({ createdAt: -1 });
-
-  res.status(201).json({
-    success: true,
-    users,
-  });
+// Get all users by role service
+export const getAllUsersByRole = async (role: UserRole) => {
+  const users = await UserModel.find({ role }).populate("courses").sort({ createdAt: -1 });
+  return users;
 };
 
-// update user role
-export const updateUserRoleService = async (res:Response,id: string,role:string) => {
-  const user = await userModel.findByIdAndUpdate(id, { role }, { new: true });
+// Get all users service (general)
+export const getAllUsers = async () => {
+    const users = await UserModel.find().sort({ createdAt: -1 });
+    return users;
+};
 
-  res.status(201).json({
-    success: true,
-    user,
-  });
-}
+// Update user role service
+export const updateUserRole = async (id: string, role: UserRole) => {
+  const user = await UserModel.findByIdAndUpdate(id, { role }, { new: true });
+  return user;
+};

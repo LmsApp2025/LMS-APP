@@ -4,8 +4,7 @@ import ErrorHandler from "../utils/ErrorHandler";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { redis } from "../utils/redis";
 import * as userController from "../controllers/user.controller";
-import AdminModel from "../models/admin.model";  
-import StudentModel from "../models/student.model"; 
+import UserModel from "../models/user.model"; // CORRECTED: Single import for UserModel
 
 export const isAutheticated = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -31,13 +30,10 @@ export const isAutheticated = CatchAsyncError(
       return next(new ErrorHandler("Session not found, please login again.", 401));
     }
     
-    // This logic remains correct: always fetch the fresh user from the database.
-    let user;
-    if (decoded.role === 'admin') {
-        user = await AdminModel.findById(decoded.id);
-    } else {
-        user = await StudentModel.findById(decoded.id).populate("courses");
-    }
+    
+    // LOGIC SIMPLIFIED: No more if/else, just one query to the UserModel
+    const user = await UserModel.findById(decoded.id).populate("courses");
+
 
     if (!user) {
         return next(new ErrorHandler("User not found, please login again.", 401));
