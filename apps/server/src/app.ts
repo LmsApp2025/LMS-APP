@@ -77,14 +77,14 @@ app.use(limiter);
 
 // 5. API Routers
 
-app.use("/", userRouter);
-app.use("/", orderRouter);
-app.use("/", bannerRouter);
-app.use("/", courseRouter);
-app.use("/", notificationRouter);
-app.use("/", analyticsRouter);
-app.use("/", layoutRouter);
-app.use("/", submissionRouter);
+app.use(userRouter);
+app.use(orderRouter);
+app.use(bannerRouter);
+app.use(courseRouter);
+app.use(notificationRouter);
+app.use(analyticsRouter);
+app.use(layoutRouter);
+app.use(submissionRouter);
 
 // 6. Test Route (for health checks)
 app.get("/test", (req, res) => {
