@@ -15,8 +15,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export const sendMail = async (options: IEmailOptions): Promise<void> => {
     const { email, subject, template, data } = options;
 
-    // Get the path to the email template file
-    const templatePath = path.join(__dirname, '../../src/mails/', template); // Adjusted path for build/src structure
+    // FIXED: The path is now relative to the compiled 'build' directory.
+    // When the code runs from /app/apps/server/build/services/email.service.js,
+    // this path correctly resolves to /app/apps/server/mails/activation-mail.ejs
+    const templatePath = path.join(__dirname, '../../mails', template);
 
     try {
         // Render the email template with EJS
@@ -32,7 +34,6 @@ export const sendMail = async (options: IEmailOptions): Promise<void> => {
         console.log(`Email sent successfully to ${email} via Resend`);
     } catch (error) {
         console.error('Error sending email via Resend:', error);
-        // Throwing an error ensures the calling function knows something went wrong
         throw new Error('Failed to send email.');
     }
 };
