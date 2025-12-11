@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 import { Box, Button, TextField, IconButton, Radio, FormControlLabel, RadioGroup, Typography } from "@mui/material";
 import { AiOutlineDelete, AiOutlinePlusCircle } from "react-icons/ai";
-import { styles } from "@/app/styles/style";
 
 type Props = {
   quizzes: any[];
@@ -22,7 +21,7 @@ const QuizEditor: FC<Props> = ({
 }) => {
   return (
     <Box>
-      <label className={`${styles.label} text-[20px]`}>Quizzes</label>
+      <Typography variant="h6" sx={{ mb: 2 }}>Quizzes</Typography>
       {quizzes.map((quiz, quizIndex) => (
         <Box key={quizIndex} className="my-4 border rounded-md p-4 relative bg-indigo-100 dark:bg-indigo-900/30">
           <IconButton onClick={() => removeQuiz(quizIndex)} sx={{ position: 'absolute', top: 10, right: 10 }}><AiOutlineDelete color="red" /></IconButton>
@@ -32,8 +31,9 @@ const QuizEditor: FC<Props> = ({
             <Box key={qIndex} className="my-3 p-3 border rounded bg-white dark:bg-slate-800 relative">
               <IconButton onClick={() => removeQuestion(quizIndex, qIndex)} sx={{ position: 'absolute', top: 5, right: 5 }}><AiOutlineDelete size={20} color="red" /></IconButton>
               <TextField label={`Question ${qIndex + 1}`} value={q.questionText} onChange={(e) => onQuestionChange(quizIndex, qIndex, 'questionText', e.target.value)} fullWidth multiline rows={2} sx={{ mb: 2 }}/>
+              
               <RadioGroup value={q.correctAnswer} onChange={(e) => onQuestionChange(quizIndex, qIndex, 'correctAnswer', e.target.value)}>
-                <Typography variant="subtitle2">Options (Select the correct one)</Typography>
+                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>Options (Select the correct one)</Typography>
                 {q.options.map((opt: any, optIndex: number) => (
                   <Box key={optIndex} sx={{ display: 'flex', alignItems: 'center' }}>
                     <FormControlLabel value={opt.optionText} control={<Radio />} label="" />
@@ -48,7 +48,7 @@ const QuizEditor: FC<Props> = ({
           <Button startIcon={<AiOutlinePlusCircle />} onClick={() => addQuestion(quizIndex)}>Add Question</Button>
         </Box>
       ))}
-      <Button startIcon={<AiOutlinePlusCircle />} onClick={addQuiz}>Add Quiz</Button>
+      <Button startIcon={<AiOutlinePlusCircle />} onClick={addQuiz}>Add Quiz Section</Button>
     </Box>
   );
 };
