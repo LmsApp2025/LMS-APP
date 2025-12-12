@@ -18,6 +18,7 @@ userRouter.get("/refresh", AuthController.refreshToken);
 
 // --- CURRENT USER ROUTES ---
 userRouter.get("/me", isAutheticated, UserController.getUserInfo);
+userRouter.get("/me-student", isAutheticated, UserController.getUserInfo);
 userRouter.put("/avatar", isAutheticated, UserController.updateAvatar);
 
 // --- ADMIN-ONLY ROUTES ---
