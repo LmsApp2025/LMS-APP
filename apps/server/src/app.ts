@@ -1,10 +1,13 @@
+// In: apps/server/src/app.ts (FINAL CORRECTED VERSION)
+
 require("dotenv").config();
 import express, { NextFunction, Request, Response } from "express";
-const app = express();
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { ErrorMiddleware } from "./middleware/error";
 import { rateLimit } from "express-rate-limit";
+import path from "path";
+import next from 'next';
 
 // Import all routers
 import userRouter from "./routes/user.route";
@@ -16,88 +19,64 @@ import analyticsRouter from "./routes/analytics.route";
 import layoutRouter from "./routes/layout.route";
 import submissionRouter from "./routes/submission.route";
 
-// ==========================================================
-// THE DEFINITIVE MIDDLEWARE ORDER
-// ==========================================================
+export const app = express();
 
+// --- NEXT.JS INTEGRATION ---
+const dev = process.env.NODE_ENV !== 'production';
+const adminAppPath = dev ? path.join(__dirname, '../../admin') : path.resolve(process.cwd(), 'apps/admin');
+const nextApp = next({ dev, dir: adminAppPath });
+export const handle = nextApp.getRequestHandler();
 
-// 1. Trust Proxy (Railway)
+// Prepare Next.js before we do anything else
+nextApp.prepare();
+
+// --- MIDDLEWARE ---
 app.set('trust proxy', 1);
-
-// 2. Logging Middleware (Debugs your issue)
-app.use((req, res, next) => {
-    console.log(`[REQUEST] ${req.method} ${req.url} | Origin: ${req.headers.origin || 'No Origin'}`);
-    next();
-});
-
-// 3. Core Middleware
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
-// 4. CORS Configuration (CRITICAL FIX)
-// We parse the allowed origins once
-let allowedOrigins: string[] = [];
-try {
-    const originEnv = process.env.ORIGIN || "['http://localhost:3000']";
-    allowedOrigins = JSON.parse(originEnv.replace(/'/g, '"'));
-    console.log("CORS_ORIGIN configured for:", allowedOrigins);
-} catch (e) {
-    console.error("CRITICAL: Invalid ORIGIN environment variable format.", e);
-    allowedOrigins = ['http://localhost:3000'];
-}
+// CORS Configuration
+const allowedOrigins = (process.env.ORIGIN || "['http://localhost:3000']").replace(/'/g, '"');
+let parsedOrigins: string[];
+try { parsedOrigins = JSON.parse(allowedOrigins); } catch (e) { parsedOrigins = ['http://localhost:3000']; }
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Mobile Apps (No Origin) -> ALLOW
-        if (!origin) {
-            return callback(null, true);
-        }
-        // Web Apps (Has Origin) -> CHECK LIST
-        if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            console.log(`Blocked by CORS: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
-        }
+        if (!origin || parsedOrigins.includes(origin)) { callback(null, true); } 
+        else { callback(new Error('Not allowed by CORS')); }
     },
-    credentials: true, // Required for Admin Panel cookies
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'access-token', 'refresh-token'],
+    credentials: true,
 }));
 
-// 4. Rate Limiter (comes after CORS and parsers)
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 1000, // Limit each IP to 1000 requests per 15 minutes
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req, res) => req.method === 'OPTIONS',
-});
-app.use(limiter);
+// Rate Limiter
+app.use("/api/v1/", rateLimit({ windowMs: 15 * 60 * 1000, max: 1000, standardHeaders: true, legacyHeaders: false }));
 
-// 5. API Routers
+// --- API ROUTES ---
+// All API routes are now definitively prefixed with /api/v1
+const apiRouter = express.Router();
+apiRouter.use(userRouter);
+apiRouter.use(orderRouter);
+apiRouter.use(bannerRouter);
+apiRouter.use(courseRouter);
+apiRouter.use(notificationRouter);
+apiRouter.use(analyticsRouter);
+apiRouter.use(layoutRouter);
+apiRouter.use(submissionRouter);
+apiRouter.get("/test", (req, res) => res.status(200).json({ success: true, message: "API is working" }));
 
-app.use("/", userRouter);
-app.use("/", orderRouter);
-app.use("/", bannerRouter);
-app.use("/", courseRouter);
-app.use("/", notificationRouter);
-app.use("/", analyticsRouter);
-app.use("/", layoutRouter);
-app.use("/", submissionRouter);
+// Mount the API router at /api/v1
+app.use('/api/v1', apiRouter);
 
-// 6. Test Route (for health checks)
-app.get("/test", (req, res) => {
-  res.status(200).json({ success: true, message: "API is working" });
-});
-
-// 7. 404 Not Found Handler (catches anything that wasn't matched above)
+// --- NEXT.JS & ERROR HANDLING (Must be last) ---
 app.all("*", (req: Request, res: Response, next: NextFunction) => {
-  const err = new Error(`Route ${req.originalUrl} not found`) as any;
-  err.statusCode = 404;
-  next(err);
+    // If the route is not an API route, let Next.js handle it.
+    // Otherwise, it's a 404 for the API.
+    if (req.path.startsWith('/api/v1')) {
+        const err = new Error(`API Route ${req.originalUrl} not found`) as any;
+        err.statusCode = 404;
+        return next(err);
+    }
+    return handle(req, res);
 });
 
-// 8. Global Error Middleware (MUST be the absolute last 'app.use' call)
 app.use(ErrorMiddleware);
-export { app };
