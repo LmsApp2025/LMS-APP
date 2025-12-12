@@ -8,14 +8,22 @@ export const coursesApi = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      // FIXED: Added invalidatesTags. This tells RTK Query to automatically
-      // refetch any query that provides the "Courses" tag after this mutation succeeds.
-      invalidatesTags: ["Courses"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(
+            coursesApi.endpoints.getAllCourses.initiate(undefined, {
+              forceRefetch: true,
+            })
+          );
+        } catch (error) {
+          console.error("Create course failed:", error);
+        }
+      },
     }),
     getAllCourses: builder.query({
       query: () => "get-admin-courses",
-      // This provides the tag that the mutation will invalidate.
-      providesTags: ["Courses"],
+      providesTags: ["Courses"], // Keep providesTags for other invalidations (like delete)
     }),
     deleteCourse: builder.mutation({
       query: (id) => ({
