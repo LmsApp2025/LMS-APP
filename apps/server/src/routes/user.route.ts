@@ -12,7 +12,7 @@ userRouter.post("/registration", AuthController.registration);
 userRouter.post("/activate-user", AuthController.activateUser);
 userRouter.post("/admin-login", AuthController.login);
 userRouter.post("/student-login", AuthController.login);
-userRouter.post("/verify-otp", AuthController.verifyOtp);
+userRouter.post("/student-verify-otp", AuthController.verifyOtp);
 userRouter.get("/logout", isAutheticated, AuthController.logout);
 userRouter.get("/refresh", AuthController.refreshToken);
 
