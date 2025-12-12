@@ -1,5 +1,3 @@
-// In: apps/server/src/routes/user.route.ts (FINAL CORRECTED VERSION)
-
 import express from "express";
 import { authorizeRoles, isAutheticated } from "../middleware/auth";
 import { UserRole } from "../models/user.model";
@@ -25,11 +23,12 @@ userRouter.put("/avatar", isAutheticated, UserController.updateAvatar);
 // --- ADMIN-ONLY ROUTES ---
 const adminOnly = [isAutheticated, authorizeRoles(UserRole.ADMIN)];
 
-// FIXED: Restored the original /get-admins route path
+// Get lists of users
 userRouter.get("/get-admins", ...adminOnly, AdminController.getAllAdmins);
+// FIXED: The route is now /admin/students (plural)
 userRouter.get("/admin/students", ...adminOnly, AdminController.getAllStudents);
 
-// FIXED: Restored the original /admin/create-student route path
+// Manage students
 userRouter.post("/admin/create-student", ...adminOnly, AdminController.createStudent);
 userRouter.put("/admin/update-student/:id", ...adminOnly, AdminController.updateStudent);
 userRouter.delete("/admin/user/:id", ...adminOnly, AdminController.deleteUser);
