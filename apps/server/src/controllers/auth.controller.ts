@@ -62,6 +62,10 @@ export const activateUser = CatchAsyncError(async (req: Request, res: Response, 
 export const login = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password, username } = req.body;
+
+        // Determine if this is an admin or student login based on the endpoint path
+        const isStudentLogin = req.path.includes('student');
+
         if ((!email && !username) || !password) {
             return next(new ErrorHandler("Please provide credentials", 400));
         }
@@ -73,21 +77,35 @@ export const login = CatchAsyncError(async (req: Request, res: Response, next: N
         if (!user) { return next(new ErrorHandler("Invalid credentials", 400)); }
 
         const isPasswordMatch = await user.comparePassword(password);
-        if (!isPasswordMatch) { return next(new ErrorHandler("Invalid credentials", 400)); }
-
-        if (user.role === UserRole.STUDENT) {
+        if (!isPasswordMatch) { 
+            return next(new ErrorHandler("Invalid credentials", 400)); 
+        }
+        
+        if (isStudentLogin) {
+            // If the request came to /student-login...
+            if (user.role !== UserRole.STUDENT) {
+                // ...but the user is NOT a student, it's an error.
+                return next(new ErrorHandler("Invalid credentials for this login portal", 400));
+            }
+            // If the user IS a student, proceed with OTP logic.
             const loginOtp = Math.floor(1000 + Math.random() * 9000).toString();
             await redis.set(`login_otp:${user._id}`, loginOtp, "EX", 300);
-            
             await EmailService.sendMail({
               email: user.email, subject: "Your Login OTP", template: "login-otp-mail.ejs",
               data: { user: { name: user.name }, loginOtp },
             });
+            return res.status(200).json({ success: true, message: `An OTP sent to ${user.email}`, user: { _id: user._id } }); // Return user ID correctly
 
-            return res.status(200).json({ success: true, message: `An OTP sent to ${user.email}`, userId: user._id });
+        } else {
+            // If the request came to /admin-login...
+            if (user.role !== UserRole.ADMIN) {
+                // ...but the user is NOT an admin, it's an error.
+                return next(new ErrorHandler("You are not authorized to access this resource", 403));
+            }
+            // If the user IS an admin, log them in directly.
+            sendToken(user, 200, res);
         }
-        
-        sendToken(user, 200, res); // Admins log in directly
+
     } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
