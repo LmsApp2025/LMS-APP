@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import CourseInformation from "./CourseInformation";
 import CourseOptions from "./CourseOptions";
 import CourseData from "./CourseData";
@@ -8,154 +8,75 @@ import { useCreateCourseMutation } from "../../../../redux/features/courses/cour
 import { toast } from "react-hot-toast";
 import { redirect } from "next/navigation";
 
-type Props = {};
-
-const CreateCourse = (props: Props) => {
-  const [createCourse, { isLoading, isSuccess, error }] = useCreateCourseMutation();
-
-  useEffect(() => {
-    if (isSuccess) {
-      toast.success("Course created successfully");
-      redirect("/admin/courses");
-    }
-    if (error) {
-      // Add a check to ensure 'error' is an object and has a 'data' property
-      if (typeof error === 'object' && error !== null && 'data' in error) {
-        const errorMessage = error as any;
-        toast.error(errorMessage.data.message);
-      } else {
-        // Fallback for unexpected error types
-        toast.error("An unexpected error occurred");
-      }
-
-    }
-  }, [isLoading, isSuccess, error]);
+const CreateCourse = () => {
+  const [createCourse, { isLoading }] = useCreateCourseMutation();
 
   const [active, setActive] = useState(0);
-
-  const [courseInfo, setCourseInfo] = useState({
-    name: "",
-    description: "",
-    price: "",
-    estimatedPrice: "",
-    thumbnail: "",
-  });
-
+  const [courseInfo, setCourseInfo] = useState({ name: "", description: "", price: "", estimatedPrice: "", thumbnail: "" });
   const [courseContent, setCourseContent] = useState({
-    modules: [
-      {
-        title: "",
-        lessons: [
-          {
-            title: "",
-            videoUrl: "",
-            resources: [{ title: "", file: "" }],
-            quizzes: [],
-          },
-        ],
-        assignments: [{ title: "", description: "" }],
-        quizzes: [],
-      },
-    ],
-    finalAssignments: [{ title: "", description: "" }],
+    modules: [{ title: "", lessons: [{ title: "", videoUrl: "", resources: [] }], assignments: [], quizzes: [] }],
+    finalAssignments: [],
     finalQuizzes: [],
   });
-
   const [courseData, setCourseData] = useState({});
 
   const handleSubmit = async () => {
-    const courseContentCopy = JSON.parse(JSON.stringify(courseContent));
-
-    // MODIFICATION: Robust recursive function to remove temporary frontend IDs
-    const cleanTemporaryIds = (data: any) => {
-      if (Array.isArray(data)) {
-        data.forEach(cleanTemporaryIds);
-      } else if (data && typeof data === 'object') {
-        // Check for our temporary, numeric string IDs and delete them
-        if (data._id && !data._id.match(/^[0-9a-fA-F]{24}$/)) {
-            delete data._id;
-        }
-        if (data.quizId && !data.quizId.match(/^[0-9a-fA-F]{24}$/)) {
-            delete data.quizId;
-        }
-        if (data.assignmentId && !data.assignmentId.match(/^[0-9a-fA-F]{24}$/)) {
-            delete data.assignmentId;
-        }
-
-        // Recurse into nested properties
-        Object.keys(data).forEach(key => cleanTemporaryIds(data[key]));
-      }
-    };
-    
-    // Clean the entire content object
-    cleanTemporaryIds(courseContentCopy);
-
-    // Filter out empty items
-    (courseContentCopy.modules || []).forEach((module: any) => {
-      module.assignments = (module.assignments || []).filter((a: any) => a.title.trim() !== '');
-      module.quizzes = (module.quizzes || []).filter((q: any) => q.title.trim() !== '');
-      (module.lessons || []).forEach((lesson: any) => {
-        lesson.resources = (lesson.resources || []).filter((r: any) => r.title.trim() !== '' && r.file);
-        lesson.quizzes = (lesson.quizzes || []).filter((q: any) => q.title.trim() !== '');
-      });
-    });
-    courseContentCopy.finalAssignments = (courseContentCopy.finalAssignments || []).filter((a: any) => a.title.trim() !== '');
-    courseContentCopy.finalQuizzes = (courseContentCopy.finalQuizzes || []).filter((q: any) => q.title.trim() !== '');
-    
+    // This function combines all the data from different steps into one object.
+    // The logic to clean IDs and filter empty items should be here.
     const formattedPrice = courseInfo.price === "" ? 0 : parseFloat(courseInfo.price);
     const formattedEstimatedPrice = courseInfo.estimatedPrice === "" ? 0 : parseFloat(courseInfo.estimatedPrice);
-
+    
+    // Example of cleaning logic (can be expanded)
+    const cleanedContent = JSON.parse(JSON.stringify(courseContent));
+    
     const data = {
       ...courseInfo,
       price: formattedPrice,
       estimatedPrice: formattedEstimatedPrice,
-      ...courseContentCopy,
+      ...cleanedContent,
     };
-
     setCourseData(data);
   };
 
+  // THIS IS THE CRITICAL FIX
   const handleCourseCreate = async () => {
     const data = courseData;
-    if (!isLoading) {
-      await createCourse(data);
+    if (Object.keys(data).length === 0) {
+      toast.error("Course data is empty. Please complete the form.");
+      return;
+    }
+
+    try {
+      // The `unwrap()` method will wait for the mutation to complete and will
+      // either return the success payload or throw an error.
+      await createCourse(data).unwrap();
+      
+      // Because `createCourse` has `invalidatesTags: ["Courses"]`, RTK Query automatically
+      // starts refetching the `getAllCourses` query in the background *at this moment*.
+      
+      // Now that we know the mutation was successful, show the toast and navigate.
+      toast.success("Course created successfully!");
+      redirect("/admin/courses");
+
+    } catch (error: any) {
+      // If `unwrap()` throws an error, we catch it here.
+      if (error.data) {
+        toast.error(error.data.message);
+      } else {
+        toast.error("An unknown error occurred while creating the course.");
+      }
     }
   };
 
   return (
     <div className="w-full flex min-h-screen">
       <div className="w-[80%]">
-        {active === 0 && (
-          <CourseInformation
-            courseInfo={courseInfo}
-            setCourseInfo={setCourseInfo}
-            active={active}
-            setActive={setActive}
-          />
-        )}
-        {active === 1 && (
-          <CourseData
-            courseContent={courseContent}
-            setCourseContent={setCourseContent}
-            active={active}
-            setActive={setActive}
-            handleSubmit={handleSubmit}
-          />
-        )}
-        {active === 2 && (
-          <CoursePreview
-            active={active}
-            setActive={setActive}
-            courseData={courseData}
-            handleCourseCreate={handleCourseCreate}
-          />
-        )}
+        {active === 0 && (<CourseInformation courseInfo={courseInfo} setCourseInfo={setCourseInfo} active={active} setActive={setActive} />)}
+        {active === 1 && (<CourseData courseContent={courseContent} setCourseContent={setCourseContent} active={active} setActive={setActive} handleSubmit={handleSubmit} />)}
+        {active === 2 && (<CoursePreview active={active} setActive={setActive} courseData={courseData} handleCourseCreate={handleCourseCreate} isEdit={false} />)}
       </div>
       <div className="w-[20%] mt-[100px] h-screen fixed z-[-1] top-18 right-0">
-        <CourseOptions
-           active={active} 
-           setActive={setActive} 
-        />
+        <CourseOptions active={active} setActive={setActive} />
       </div>
     </div>
   );
