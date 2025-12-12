@@ -24,14 +24,19 @@ async function processModuleUploads(modules: any[], courseSlug: string): Promise
 
 export const createCourse = async (data: any): Promise<ICourse> => {
     const courseSlug = slugify(data.name);
-    if (data.thumbnail?.startsWith("data:")) {
-        data.thumbnail = await FileService.uploadBase64ToR2(data.thumbnail, 'marstech-lms-thumbnails-2025', `${courseSlug}/thumbnail`);
+    if (data.thumbnail && data.thumbnail.startsWith("data:")) {
+        const bucketName = 'marstech-lms-thumbnails-2025';
+        const objectPrefix = `${courseSlug}/thumbnail`;
+        data.thumbnail = await FileService.uploadBase64ToR2(data.thumbnail, bucketName, objectPrefix);
     }
-    if (data.modules) {
-        data.modules = await processModuleUploads(data.modules, courseSlug);
-    }
+    if (data.modules) { data.modules = await processModuleUploads(data.modules, courseSlug); }
+
     const course = await CourseModel.create(data);
+
+    // THE DEFINITIVE FIX: Delete the correct cache keys.
     await redis.del("allCourses_client");
+    await redis.del("allCourses_admin");
+    
     return course;
 };
 
