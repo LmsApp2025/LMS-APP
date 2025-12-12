@@ -65,7 +65,7 @@ export const login = CatchAsyncError(async (req: Request, res: Response, next: N
             await redis.set(`login_otp:${user._id}`, loginOtp, "EX", 300);
             await EmailService.sendMail({ email: user.email, subject: "Your Login OTP", template: "login-otp-mail.ejs", data: { user: { name: user.name }, loginOtp } });
             
-            // THE DEFINITIVE FIX: Revert the response to match the original, working API contract.
+            // THE ABSOLUTE FINAL FIX: Send a simple, direct userId.
             return res.status(200).json({ success: true, message: `An OTP sent to ${user.email}`, userId: user._id });
 
         } else {
