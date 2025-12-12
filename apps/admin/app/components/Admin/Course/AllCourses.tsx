@@ -37,9 +37,9 @@ const AllCourses = () => {
     { field: "id", headerName: "ID", flex: 0.5 },
     { field: "title", headerName: "Course Title", flex: 1 },
     { field: "purchased", headerName: "Enrolled", flex: 0.3 },
-    { field: "created_at", headerName: "Created At", flex: 0.4 },
+    { field: "created_at", headerName: "Created At", flex: 0.3 },
     {
-      field: "actions", headerName: "Actions", flex: 0.4,
+      field: "actions", headerName: "Actions", flex: 0.5,
       renderCell: (params: any) => (
         <Box>
           <Link href={`/admin/edit-course/${params.row.id}`} passHref><IconButton><FiEdit2 /></IconButton></Link>
