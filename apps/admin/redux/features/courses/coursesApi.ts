@@ -8,22 +8,14 @@ export const coursesApi = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        try {
-          await queryFulfilled;
-          dispatch(
-            coursesApi.endpoints.getAllCourses.initiate(undefined, {
-              forceRefetch: true,
-            })
-          );
-        } catch (error) {
-          console.error("Create course failed:", error);
-        }
-      },
+      // This is the key fix. After this mutation succeeds, it invalidates the "Courses" tag.
+      invalidatesTags: ["Courses"],
     }),
     getAllCourses: builder.query({
       query: () => "get-admin-courses",
-      providesTags: ["Courses"], // Keep providesTags for other invalidations (like delete)
+      // This query's result is tagged with "Courses". When the tag is invalidated,
+      // any component using this query will automatically refetch.
+      providesTags: ["Courses"],
     }),
     deleteCourse: builder.mutation({
       query: (id) => ({
@@ -40,14 +32,31 @@ export const coursesApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Courses"],
     }),
-    // ... (rest of the endpoints remain the same)
-    getUsersAllCourses: builder.query({ query: () => "get-courses" }),
-    getCourseDetails: builder.query({ query: (id: any) => `get-course/${id}` }),
-    getCourseContent: builder.query({ query: (id) => `get-course-content/${id}` }),
-    addNewQuestion: builder.mutation({ query: (data) => ({ url: "add-question", method: "PUT", body: data }), invalidatesTags: ["Courses"] }),
-    addAnswerInQuestion: builder.mutation({ query: (data) => ({ url: "add-answer", method: "PUT", body: data }), invalidatesTags: ["Courses"] }),
-    addReviewInCourse: builder.mutation({ query: (data) => ({ url: `add-review/${data.id}`, method: "PUT", body: data }), invalidatesTags: ["Courses"] }),
-    addReplyInReview: builder.mutation({ query: (data) => ({ url: `add-reply`, method: "PUT", body: data }), invalidatesTags: ["Courses"] }),
+    getUsersAllCourses: builder.query({ 
+        query: () => "get-courses" 
+    }),
+    getCourseDetails: builder.query({ 
+        query: (id: any) => `get-course/${id}` 
+    }),
+    getCourseContent: builder.query({ 
+        query: (id) => `get-course-content/${id}` 
+    }),
+    addNewQuestion: builder.mutation({ 
+        query: (data) => ({ url: "add-question", method: "PUT", body: data }), 
+        invalidatesTags: ["Courses"] 
+    }),
+    addAnswerInQuestion: builder.mutation({ 
+        query: (data) => ({ url: "add-answer", method: "PUT", body: data }), 
+        invalidatesTags: ["Courses"] 
+    }),
+    addReviewInCourse: builder.mutation({ 
+        query: (data) => ({ url: `add-review/${data.id}`, method: "PUT", body: data }), 
+        invalidatesTags: ["Courses"] 
+    }),
+    addReplyInReview: builder.mutation({ 
+        query: (data) => ({ url: `add-reply`, method: "PUT", body: data }), 
+        invalidatesTags: ["Courses"] 
+    }),
   }),
 });
 
