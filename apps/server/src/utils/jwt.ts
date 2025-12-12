@@ -27,17 +27,19 @@ export const sendToken = (user: IUser, statusCode: number, res: Response) => {
     const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.ACCESS_TOKEN!, { expiresIn: `${accessTokenExpire}m` });
     const refreshToken = jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_TOKEN!, { expiresIn: `${refreshTokenExpire}d` });
 
-    // THE DEFINITIVE FIX: Save the entire user object to Redis.
-    // This makes the session the single source of truth for the user's state.
+    // THE CORE FIX: Always save the complete, up-to-date user object to Redis.
+    // This is our session's single source of truth.
     redis.set(user._id.toString(), JSON.stringify(user), "EX", refreshTokenExpire * 24 * 60 * 60);
 
     res.cookie("access_token", accessToken, accessTokenOptions);
     res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
+    // For the mobile app, it's crucial to send back the user object and tokens.
     res.status(statusCode).json({
         success: true,
-        user, // Send the user object on login/refresh
+        user,
         accessToken,
+        refreshToken, // Send refresh token for mobile to store
     });
 };
 

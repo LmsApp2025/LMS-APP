@@ -44,49 +44,56 @@ export const activateUser = CatchAsyncError(async (req: Request, res: Response, 
     } catch (error: any) { return next(new ErrorHandler(error.message, 400)); }
 });
 
+// --- Unified Login Controller ---
 export const login = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { email, password, username } = req.body;
-        const isStudentLogin = req.path.includes('student');
+    const { email, password, username } = req.body;
+    const isStudentLogin = req.path.includes('student');
 
-        if ((!email && !username) || !password) { return next(new ErrorHandler("Please provide credentials", 400)); }
+    if ((!email && !username) || !password) { return next(new ErrorHandler("Please provide credentials", 400)); }
+    
+    const user = await UserModel.findOne( email ? { email } : { username }).select("+password");
+
+    if (!user || !(await user.comparePassword(password))) {
+        return next(new ErrorHandler("Invalid credentials", 400));
+    }
+
+    if (isStudentLogin) {
+        if (user.role !== UserRole.STUDENT) { return next(new ErrorHandler("Invalid credentials for this portal", 400)); }
         
-        const user = email ? await UserModel.findOne({ email }).select("+password") : await UserModel.findOne({ username }).select("+password");
-
-        if (!user) { return next(new ErrorHandler("Invalid credentials", 400)); }
-
-        const isPasswordMatch = await user.comparePassword(password);
-        if (!isPasswordMatch) { return next(new ErrorHandler("Invalid credentials", 400)); }
-
-        if (isStudentLogin) {
-            if (user.role !== UserRole.STUDENT) { return next(new ErrorHandler("Invalid credentials for this login portal", 400)); }
-            
-            const loginOtp = Math.floor(1000 + Math.random() * 9000).toString();
-            await redis.set(`login_otp:${user._id}`, loginOtp, "EX", 300);
-            await EmailService.sendMail({ email: user.email, subject: "Your Login OTP", template: "login-otp-mail.ejs", data: { user: { name: user.name }, loginOtp } });
-            
-            // THE ABSOLUTE FINAL FIX: Send a simple, direct userId.
-            return res.status(200).json({ success: true, message: `An OTP sent to ${user.email}`, userId: user._id });
-
-        } else {
-            if (user.role !== UserRole.ADMIN) { return next(new ErrorHandler("You are not authorized to access this resource", 403)); }
-            sendToken(user, 200, res);
-        }
-    } catch (error: any) { return next(new ErrorHandler(error.message, 400)); }
-});
-
-export const verifyOtp = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { userId, otp } = req.body;
-        if (!userId || !otp) { return next(new ErrorHandler("Request is missing userId or otp", 400)); }
-        const storedOtp = await redis.get(`login_otp:${userId}`);
-        if (!storedOtp || storedOtp !== otp) { return next(new ErrorHandler("Invalid or expired OTP.", 400)); }
-        const user = await UserModel.findById(userId);
-        if (!user) { return next(new ErrorHandler("User not found.", 404)); }
-        await redis.del(`login_otp:${userId}`);
+        const loginOtp = Math.floor(1000 + Math.random() * 9000).toString();
+        await redis.set(`login_otp:${user._id}`, loginOtp, "EX", 300);
+        await EmailService.sendMail({ email: user.email, subject: "Your Login OTP", template: "login-otp-mail.ejs", data: { user: { name: user.name }, loginOtp } });
+        
+        // This response is correct for the mobile app's first step.
+        return res.status(200).json({ success: true, message: `An OTP sent to ${user.email}`, userId: user._id });
+    } else {
+        if (user.role !== UserRole.ADMIN) { return next(new ErrorHandler("Not authorized", 403)); }
+        // Admin login is direct.
         sendToken(user, 200, res);
-    } catch (error: any) { return next(new ErrorHandler(error.message, 400)); }
+    }
 });
+
+// --- OTP Verification ---
+export const verifyOtp = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    const { userId, otp } = req.body;
+    if (!userId || !otp) { return next(new ErrorHandler("Missing userId or otp", 400)); }
+
+    const storedOtp = await redis.get(`login_otp:${userId}`);
+    if (!storedOtp || storedOtp !== otp) {
+        return next(new ErrorHandler("Invalid or expired OTP.", 400));
+    }
+
+    // THE CORE FIX: Fetch the full user from the database ONCE after successful verification.
+    const user = await UserModel.findById(userId);
+    if (!user) { return next(new ErrorHandler("User not found.", 404)); }
+
+    // Clean up the OTP from Redis
+    await redis.del(`login_otp:${userId}`);
+
+    // Call sendToken, which handles saving the full user to Redis and sending tokens.
+    sendToken(user, 200, res);
+});
+
 
 export const logout = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
