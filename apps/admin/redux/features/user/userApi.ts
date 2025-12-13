@@ -9,7 +9,6 @@ export const userApi = apiSlice.injectEndpoints({
     
     // --- STUDENT ENDPOINTS ---
     getAllStudents: builder.query({
-      // FIXED: The query now points to the correct, plural "students" endpoint
       query: () => "admin/students", 
       providesTags: ["Students"],
     }),
@@ -19,8 +18,6 @@ export const userApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: data,
       }),
-      // FIXED: This is the crucial cache invalidation step.
-      // After a student is created, it tells RTK Query to refetch the "Students" list.
       invalidatesTags: ["Students"],
     }),
     adminUpdateStudent: builder.mutation({
@@ -29,11 +26,11 @@ export const userApi = apiSlice.injectEndpoints({
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: ["Students"],
+      invalidatesTags: (result, error, { id }) => [{ type: 'Students', id }],
     }),
     adminDeleteStudent: builder.mutation({
       query: (id) => ({
-        url: `admin/delete-user/${id}`, // Note: using the general delete user route
+        url: `admin/user/${id}`, // Note: using the general delete user route
         method: 'DELETE',
       }),
       invalidatesTags: ["Students"],
