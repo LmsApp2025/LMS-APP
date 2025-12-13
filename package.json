@@ -17,8 +17,9 @@
     "clean": "turbo clean && rm -rf node_modules **/build **/.next **/dist"
   },
   "devDependencies": {
-    "turbo": "^2.1.2",
     "concurrently": "^8.2.2",
+    "dotenv-cli": "^11.0.0",
+    "turbo": "^2.1.2",
     "typescript": "^5.6.2"
   }
 }
