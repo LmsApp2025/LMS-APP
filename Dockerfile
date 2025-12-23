@@ -1,48 +1,50 @@
-# In: LMS-APP/Dockerfile (FINAL, CORRECTED VERSION)
-
-# ---- Base Stage ----
-# Use a specific Node version for consistency
-FROM node:20-alpine AS base
+# ---- Build Stage ----
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-# ---- Dependencies Stage ----
-FROM base AS deps
-# Copy all package.json and lock files
-COPY package.json package-lock.json ./
-COPY apps/admin/package.json ./apps/admin/
-COPY apps/server/package.json ./apps/server/
-# Install production dependencies for all workspaces
-RUN npm ci --omit=dev
+# 1. Copy root configuration files
+COPY package.json package-lock.json turbo.json ./
 
-# ---- Builder Stage ----
-FROM base AS builder
-# Copy only the necessary dependencies from the 'deps' stage
-COPY --from=deps /app/node_modules ./node_modules
+# 2. CRITICAL: Copy workspace package.json files BEFORE running npm install
+# npm needs these to resolve the workspace dependencies defined in package-lock.json
+COPY apps/admin/package.json ./apps/admin/package.json
+COPY apps/server/package.json ./apps/server/package.json
+# We copy mobile too to satisfy the workspace lockfile integrity, 
+# even if we aren't building it.
+#COPY apps/mobile/package.json ./apps/mobile/package.json 
+
+# 3. Install ALL deps including devDependencies
+# Now npm sees the sub-packages and installs 'express', 'types', etc.
+RUN npm ci --include=dev
+
+# 4. Install global tools
+RUN npm install -g next typescript
+
+# 5. Copy the rest of the source code
 COPY . .
-# Build both the server and the admin panel
-RUN npm run build
+
+# 6. Build
+RUN npx turbo build --filter=admin --filter=server
 
 # ---- Production Stage ----
-FROM base AS runner
+FROM node:22-alpine
 WORKDIR /app
 
-ENV NODE_ENV=production
-
-# Copy built server and its production node_modules
-COPY --from=builder /app/apps/server/build ./apps/server/build
-COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
-COPY --from=builder /app/apps/server/src/mails ./apps/server/src/mails
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy built Next.js app
-COPY --from=builder /app/apps/admin/.next ./apps/admin/.next
+# Copy standalone Next.js (Admin)
+COPY --from=builder /app/apps/admin/.next/standalone ./
+COPY --from=builder /app/apps/admin/.next/static ./apps/admin/.next/static
 COPY --from=builder /app/apps/admin/public ./apps/admin/public
-COPY --from=builder /app/apps/admin/package.json ./apps/admin/package.json
 
-# Copy the final unified server entry point
-COPY --from=builder /app/apps/server/build/server.js ./server.js
+# Copy Server build
+COPY --from=builder /app/apps/server/build ./apps/server/build
+COPY --from=builder /app/apps/server/src/mails ./apps/server/mails
+# Copy Server package.json and node_modules for runtime dependencies
+COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
+# NOTE: In a robust setup, you might want to prune devDependencies here, 
+# but copying the hoisted node_modules is the safest way to ensure runtime deps exist.
+COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 8000
 
-# The command to run the final unified server
-CMD ["node", "server.js"]
+# Ensure we use the correct path to the compiled server file
+CMD ["node", "apps/server/build/server.js"]
