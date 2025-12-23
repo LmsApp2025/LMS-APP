@@ -1,13 +1,6 @@
-# In: C:\Users\hp pavillion 15\Desktop\LMS-Project\LMS-APP\docker-compose.yml
-
-version: '3.9'
-
-# This file is for LOCAL DEVELOPMENT ONLY.
-# It creates a self-contained environment with a server, database, cache, and storage.
-# Production variables (like your Railway DB URL) are set in the Railway dashboard, not here.
+# In: LMS-APP/docker-compose.yml (For Production & Building)
 
 services:
-  # This service builds and runs your application from the Dockerfile
   server:
     build:
       context: .
@@ -15,50 +8,27 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # These variables are passed into the 'server' container.
-      # They point to the OTHER services defined in this file.
-      # Sever Configuration
-      - PORT = 8000
-      - NODE_ENV = development
-      - ORIGIN = ['http://localhost:3000']
-      # BACKEND SERVICES - Pointing to LOCAL Docker Containers
-      - DB_URL = mongodb://localhost:27017/lms
-      - REDIS_URL = redis://localhost:6379
-      # These credentials MUST match your docker-compose.yml file
-      - MINIO_ENDPOINT = localhost
-      - MINIO_PORT=9000
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadminsecret
-      - MINIO_USE_SSL=false
-      # JWT SECRETS 
-      - ACCESS_TOKEN=ad851d0c882a29c2b7d03c9561ab48cefe257b28fbc6f05a2426e108df800d55
-      - REFRESH_TOKEN=ebf45be2628c3fe86f6e1727302e80f805673d735683ce5798edced2b336df37
-      - ACTIVATION_SECRET=59646039045
-      - ACCESS_TOKEN_EXPIRE=15
-      - REFRESH_TOKEN_EXPIRE=30
-      # THIRD-PARTY API KEYS (From your production config)
-      # Your Resend API Key
-      - RESEND_API_KEY=re_5rbUABEF_9fwLumuWoJ933XM2HVAtU8SL
-      # Your verified sender email with Resend
-      - RESEND_SENDER_EMAIL=noreply@marstechsupport.com
-
+      # In production (like Railway), these are placeholders. The platform injects the real values.
+      # When running with this file, it uses these values to connect to the other containers.
+      - DB_URL=mongodb://mongo:27017/lms
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ENDPOINT=minio
+      # NOTE: All other secrets (JWT, Resend, Stripe, etc.) must be provided when running.
     depends_on:
       - mongo
       - minio
       - redis
     restart: unless-stopped
 
-  # This is your LOCAL MongoDB database service
   mongo:
     image: mongo:latest
     environment:
-      MONGO_INITDB_DATABASE: lms
+      - MONGO_INITDB_DATABASE=lms
     volumes:
       - mongo_data:/data/db
     ports:
       - "27017:27017"
 
-  # This is your LOCAL MinIO object storage service
   minio:
     image: minio/minio
     command: server /data --console-address ":9001"
@@ -66,12 +36,11 @@ services:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadminsecret
     ports:
-      - "9000:9000"   # API Port
-      - "9001:9001"   # Web Console Port
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - minio_data:/data
 
-  # This is your LOCAL Redis cache service
   redis:
     image: redis:latest
     ports:
@@ -79,7 +48,6 @@ services:
     volumes:
       - redis_data:/data
 
-# These named volumes persist your data locally between docker-compose runs
 volumes:
   mongo_data:
   minio_data:

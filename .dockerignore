@@ -4,7 +4,9 @@
 *.log
 coverage
 .DS_Store
+Thumbs.db
 
+node_modules
 # Build outputs (will be recreated)
 **/.next/
 **/build/

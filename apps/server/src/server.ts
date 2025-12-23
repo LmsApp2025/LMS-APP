@@ -1,5 +1,12 @@
 // In: apps/server/src/server.ts (FINAL CORRECTED VERSION)
 
+import dotenv from 'dotenv';
+import path from 'path';
+
+// THE DEFINITIVE FIX: Load environment variables directly from the .env file.
+// This line MUST be at the very top, before any other imports that need env variables.
+dotenv.config({ path: path.resolve(__dirname, './.env') });
+
 import http from 'http';
 import connectDB from './utils/db';
 import { initSocketServer } from './socketServer';

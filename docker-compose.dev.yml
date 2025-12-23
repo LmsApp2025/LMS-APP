@@ -1,0 +1,38 @@
+# In: LMS-APP/docker-compose.dev.yml (NEW FILE for Local Development)
+
+# This file starts ONLY the background services needed for local development.
+# It does NOT build or run the Node.js server.
+
+services:
+  mongo:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_DATABASE=lms
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadminsecret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongo_data:
+  minio_data:
+  redis_data:
