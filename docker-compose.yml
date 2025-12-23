@@ -17,25 +17,31 @@ services:
     environment:
       # These variables are passed into the 'server' container.
       # They point to the OTHER services defined in this file.
-      - NODE_ENV=development
-      - DB_URL=mongodb://mongo:27017/lms
-      - REDIS_URL=redis://redis:6379
-      - MINIO_ENDPOINT=minio
+      # Sever Configuration
+      - PORT = 8000
+      - NODE_ENV = development
+      - ORIGIN = ['http://localhost:3000']
+      # BACKEND SERVICES - Pointing to LOCAL Docker Containers
+      - DB_URL = mongodb://localhost:27017/lms
+      - REDIS_URL = redis://localhost:6379
+      # These credentials MUST match your docker-compose.yml file
+      - MINIO_ENDPOINT = localhost
       - MINIO_PORT=9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadminsecret
       - MINIO_USE_SSL=false
-      # You MUST add your other required .env variables here
-      - REFRESH_TOKEN_EXPIRE=30
+      # JWT SECRETS 
+      - ACCESS_TOKEN=ad851d0c882a29c2b7d03c9561ab48cefe257b28fbc6f05a2426e108df800d55
+      - REFRESH_TOKEN=ebf45be2628c3fe86f6e1727302e80f805673d735683ce5798edced2b336df37
+      - ACTIVATION_SECRET=59646039045
       - ACCESS_TOKEN_EXPIRE=15
-      - ACTIVATION_SECRET=YourActivationSecret
-      - REFRESH_TOKEN=YourRefreshTokenSecret
-      - ACCESS_TOKEN=YourAccessTokenSecret
-      - RESEND_API_KEY=YourResendApiKey
-      - RESEND_SENDER_EMAIL=YourResendSenderEmail
-      - STRIPE_PUBLISHABLE_KEY=YourStripePublishableKey
-      - STRIPE_SECRET_KEY=YourStripeSecretKey
-      - ORIGIN=['http://localhost:3000']
+      - REFRESH_TOKEN_EXPIRE=30
+      # THIRD-PARTY API KEYS (From your production config)
+      # Your Resend API Key
+      - RESEND_API_KEY=re_5rbUABEF_9fwLumuWoJ933XM2HVAtU8SL
+      # Your verified sender email with Resend
+      - RESEND_SENDER_EMAIL=noreply@marstechsupport.com
+
     depends_on:
       - mongo
       - minio
